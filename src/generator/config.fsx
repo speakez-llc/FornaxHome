@@ -19,6 +19,7 @@ let staticPredicate (projectRoot: string, page: string) =
         ext = ".fsx" ||
         ext = ".md"  ||
         page.Contains "_public" ||
+        page.Contains("/_public/") ||
         page.Contains "_bin" ||
         page.Contains "_lib" ||
         page.Contains "_data" ||
