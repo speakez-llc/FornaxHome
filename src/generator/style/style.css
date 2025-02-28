@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --transition-duration: 0.4s;
+  --transition-timing-function: ease-in-out;
+}
+
+html {
+  transition: background-color var(--transition-duration) var(--transition-timing-function),
+  color var(--transition-duration) var(--transition-timing-function);
+}
+
+
+/* Custom styling that works with DaisyUI */
+html, body {
+  font-family: 'Varela Round', sans-serif;
+  font-size: 16px;
+}
+
+.hero {
+  background-image: url('/images/slider.jpg');
+  background-position: top;
+  background-size: cover;
+  background-repeat: no-repeat;
+  min-height: 500px;
+  filter: grayscale(100%) brightness(0.8);
+}
+
+.hero-content {
+  backdrop-filter: blur(5px);
+  background-color: rgba(0, 0, 0, 0.4);
+  border-radius: 1rem;
+  padding: 2rem;
+}
+
+.card {
+  margin-top: -150px;
+}
+
+@media screen and (max-width: 768px) {
+  .card {
+
+  }
+  .content {
+    max-width: 100%;
+    line-height: 1.6;
+  }
+}
+
+.card-title {
+  font-size: 2rem;
+  font-weight: lighter;
+  line-height: 2;
+}
+
+.prose img {
+  border-radius: 0.5rem;
+}
+
+.prose {
+  max-width: 100%;
+}
+
+.articles {
+  margin-top: -200px;
+  z-index: 10;
+  position: relative;
+}
+
+.card-body {
+  padding: 2rem;
+}
+
+.content article-body {
+  margin: 0;
+  padding: 0 1rem;
+  line-height: 1.6;
+  width: 100%;
+}
+
