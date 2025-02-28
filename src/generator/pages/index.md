@@ -1,3 +1,9 @@
+---
+layout: page
+title: Welcome to SpeakEZ's Home Page
+author: @houstonhaynes
+published: 2025-02-28
+---
 # Welcome to FornaxHome
 
 This is the home page of our site. Built with Fornax and Suave.
