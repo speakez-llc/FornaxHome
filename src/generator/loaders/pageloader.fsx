@@ -5,7 +5,7 @@
 open System.IO
 open System
 
-// Use the Layout.Page type but alias it for this module
+// Use the Layout.Page type since that's the single source of truth
 type Page = Layout.Page
 
 let markdownPipeline =

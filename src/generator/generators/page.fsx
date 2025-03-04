@@ -3,53 +3,21 @@
 #load "layout.fsx"
 
 open Html
-open System.IO
 open System.Text.RegularExpressions
+open System.IO
+open System
 
 // Add a comment about Markdig extensions
 // Note: If you want to use more Markdig extensions, you can add them here:
-// let markdownPipeline =
-//     let pipeline = new Markdig.MarkdownPipelineBuilder()
-//     // Add extensions if available:
-//     // pipeline.UsePipeTables().UseGridTables().UseTaskLists().UseEmphasisExtras().UseCitations()
-//     pipeline.Build()
+let markdownPipeline =
+    let pipeline = new Markdig.MarkdownPipelineBuilder()
+    pipeline.Build()
 
 // Process custom shortcodes in content
 let processShortcodes (content: string) =
     // Contact form shortcode
     let contactFormPattern = "{{contact_form}}"
-    let contactFormHtml = """
-<div class="card bg-base-100 shadow-xl">
-  <div class="card-body">
-    <form action="/api/contact" method="post">
-      <div class="form-control w-full">
-        <label class="label">
-          <span class="label-text">Name</span>
-        </label>
-        <input type="text" name="name" class="input input-bordered w-full" required />
-      </div>
-      
-      <div class="form-control w-full mt-4">
-        <label class="label">
-          <span class="label-text">Email</span>
-        </label>
-        <input type="email" name="email" class="input input-bordered w-full" required />
-      </div>
-      
-      <div class="form-control w-full mt-4">
-        <label class="label">
-          <span class="label-text">Message</span>
-        </label>
-        <textarea name="message" class="textarea textarea-bordered h-24" required></textarea>
-      </div>
-      
-      <div class="form-control mt-6">
-        <button type="submit" class="btn btn-primary w-full">Send Message</button>
-      </div>
-    </form>
-  </div>
-</div>
-"""
+
 
     // Alert shortcode
     let alertPattern = "{{alert (.*?)}}"
@@ -67,26 +35,6 @@ let processShortcodes (content: string) =
     
     withAlerts
 
-// Similar to postloader's getConfig
-let getConfig (fileContent : string) =
-    let fileContent = fileContent.Split '\n'
-    let fileContent = fileContent |> Array.skip 1 // First line must be ---
-    let indexOfSeperator = fileContent |> Array.findIndex (fun s -> s.StartsWith "---")
-    let splitKey (line: string) =
-        let seperatorIndex = line.IndexOf(':')
-        if seperatorIndex > 0 then
-            let key = line.[.. seperatorIndex - 1].Trim().ToLower()
-            let value = line.[seperatorIndex + 1 ..].Trim()
-            Some(key, value)
-        else
-            None
-    fileContent
-    |> Array.splitAt indexOfSeperator
-    |> fst
-    |> Seq.choose splitKey
-    |> Map.ofSeq
-
-// Get content from markdown file
 let getContent (fileContent : string) =
     let fileContent = fileContent.Split '\n'
     let fileContent = fileContent |> Array.skip 1 // First line must be ---
@@ -98,9 +46,6 @@ let getContent (fileContent : string) =
     |> fun content -> Markdig.Markdown.ToHtml(content, markdownPipeline)
 
 let generate' (ctx : SiteContents) (page: string) =
-    // Print debugging information
-    printfn "Generating page: %s" page
-    
     // Load page content directly from file if it exists
     let filePath = Path.Combine("pages", page)
     let pageTitle = 

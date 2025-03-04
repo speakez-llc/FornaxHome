@@ -35,8 +35,9 @@ let generate' (ctx : SiteContents) (_: string) =
           if i = 0 then "#"
           else "/" + getFilenameForIndex (i - 1)
   
-      // Use the same Layout.layout function with the same structure as other pages
+      // Use Layout.layout exactly as other pages do
       Layout.layout ctx "Posts" [
+          // Hero section - identical to other pages
           section [Class "hero bg-primary text-primary-content py-24"] [
               div [Class "hero-content text-center"] [
                   div [Class "max-w-md"] [
@@ -44,10 +45,14 @@ let generate' (ctx : SiteContents) (_: string) =
                   ]
               ]
           ]
+          
+          // Content container - structured exactly like page.fsx
           div [Class "container mx-auto px-4"] [
               section [Class "py-8"] [
                   div [Class "max-w-3xl mx-auto"] psts
               ]
+              
+              // Pagination controls
               div [Class "flex justify-center items-center gap-4 p-4 rounded-lg"] [
                   a [Class "btn btn-outline transition-opacity duration-500 ease-in-out"; Href previousPage] [!! "Previous"]
                   span [Class "text-sm"] [!! (sprintf "Page %i of %i" (i + 1) pages)]
@@ -63,4 +68,20 @@ let generate' (ctx : SiteContents) (_: string) =
     |> Layout.render ctx)
 
 let generate (ctx : SiteContents) (projectRoot: string) (page: string) =
-    generate' ctx page
+    try
+        generate' ctx page
+    with ex ->
+        printfn "Error generating posts: %s" ex.Message
+        [("posts/index.html", 
+          Layout.layout ctx "Posts" [
+            div [Class "container mx-auto px-4 py-8"] [
+                div [Class "card bg-error text-error-content max-w-md mx-auto"] [
+                    div [Class "card-body"] [
+                        h2 [Class "card-title"] [!!"Error Loading Posts"]
+                        p [] [!!"There was an error generating the posts page."]
+                        a [Class "btn"; Href "/"] [!!"Return Home"]
+                    ]
+                ]
+            ]
+          ]
+          |> Layout.render ctx)]
