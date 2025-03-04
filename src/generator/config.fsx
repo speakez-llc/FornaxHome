@@ -13,6 +13,18 @@ let postPredicate (projectRoot: string, page: string) =
     else
         false
 
+let pagePredicate (projectRoot: string, page: string) =
+    let fileName = Path.Combine(projectRoot, page)
+    let ext = Path.GetExtension page
+    let dir = Path.GetDirectoryName page
+    let isPage = 
+        ext = ".md" &&
+        not (page.Contains "_public") &&
+        dir.Contains("pages") &&
+        not (postPredicate(projectRoot, page))
+    
+    isPage
+
 let staticPredicate (projectRoot: string, page: string) =
     let ext = Path.GetExtension page
     let fileShouldBeExcluded =
@@ -36,11 +48,9 @@ let config = {
         {Script = "less.fsx"; Trigger = OnFileExt ".less"; OutputFile = ChangeExtension "css" }
         {Script = "sass.fsx"; Trigger = OnFileExt ".scss"; OutputFile = ChangeExtension "css" }
         {Script = "post.fsx"; Trigger = OnFilePredicate postPredicate; OutputFile = ChangeExtension "html" }
+        {Script = "page.fsx"; Trigger = OnFilePredicate pagePredicate; OutputFile = ChangeExtension "html" }
         {Script = "staticfile.fsx"; Trigger = OnFilePredicate staticPredicate; OutputFile = SameFileName }
-        {Script = "index.fsx"; Trigger = Once; OutputFile = MultipleFiles id }
         {Script = "posts.fsx"; Trigger = Once; OutputFile = MultipleFiles id }
-        {Script = "about.fsx"; Trigger = Once; OutputFile = NewFileName "about.html" }
-        {Script = "contact.fsx"; Trigger = Once; OutputFile = NewFileName "contact.html" }
         {Script = "tailwind.fsx"; Trigger = OnFileExt ".css"; OutputFile = SameFileName }
     ]
 }

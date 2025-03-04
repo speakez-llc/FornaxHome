@@ -49,8 +49,16 @@ let injectWebsocketCode (webpage:string) =
     let index = webpage.IndexOf head
     webpage.Insert ( (index + head.Length + 1),websocketScript)
 
+// Fix: Change from Pageloader.Page to our own Page type
+type Page = {
+    title: string
+    link: string
+    content: string
+    file: string
+}
+
 let layout (ctx : SiteContents) active bodyCnt =
-    let pages = ctx.TryGetValues<Pageloader.Page> () |> Option.defaultValue Seq.empty
+    let pages = ctx.TryGetValues<Page> () |> Option.defaultValue Seq.empty
     let siteInfo = ctx.TryGetValue<Globalloader.SiteInfo> ()
     let ttl =
       siteInfo
@@ -58,19 +66,19 @@ let layout (ctx : SiteContents) active bodyCnt =
       |> Option.defaultValue ""
 
     let menuEntries =
-        pages
-            |> Seq.sortBy (fun p -> 
-                match p.title with
-                | "Home" -> 0      // Home comes first
-                | "Posts" -> 1     // Posts comes second 
-                | "About" -> 2     // About comes third
-                | "Contact" -> 3   // Contact comes fourth
-                | _ -> 10          // All other pages come after
-            )
-            |> Seq.map (fun p ->
-            let cls = if p.title = active then "active" else ""
-            li [] [a [Class cls; Href p.link] [!! p.title]])
-            |> Seq.toList
+      pages
+        |> Seq.sortBy (fun p -> 
+            match p.title with
+            | "Home" -> 0      // Home comes first
+            | "Posts" -> 1     // Posts comes second
+            | "About" -> 2     // About comes third
+            | "Contact" -> 3   // Contact comes fourth
+            | _ -> 10          // All other pages come after
+        )
+        |> Seq.map (fun p ->
+          let cls = if p.title = active then "active" else ""
+          li [] [a [Class cls; Href p.link] [!! p.title]])
+        |> Seq.toList
 
     html [] [
         head [] [
@@ -88,28 +96,27 @@ let layout (ctx : SiteContents) active bodyCnt =
             script [Src "https://kit.fontawesome.com/3e50397676.js"; CrossOrigin "anonymous"] []
         ]
         body [] [
-          nav [Class "navbar bg-base-100"] [
-              div [Class "container mx-auto flex justify-between items-center"] [
-                  // Logo section
-                  div [Class "flex-1"] [
+          nav [Class "navbar"] [
+              div [Class "container flex justify-between mx-auto items-center w-full"] [
+                  // Logo section - stays the same
+                  div [Class "navbar-start"] [
                       a [Class "btn btn-ghost text-xl"; Href "/"] [
                           img [Src "/images/SpeakEZ_standard.png"; Alt "Logo"; Class "h-8 mr-2"]
                       ]
                   ]
-                  // Desktop menu - centered with flex-1
-                  div [Class "flex-1 flex justify-center items-center"] [
+                  // Desktop menu
+                  div [Class "navbar-center hidden lg:flex items-center"] [
                       ul [Class "menu menu-horizontal px-1"] menuEntries
-                  ]
-                  // Right section for theme toggle
-                  div [Class "flex-1 flex justify-end"] [
                       // Theme switcher for desktop
-                      label [Class "swap swap-rotate hidden lg:flex"] [
+                      label [Class "swap swap-rotate ml-4"] [
                           input [Type "checkbox"; Class "theme-controller"; HtmlProperties.Custom ("data-toggle-theme", "business,corporate")]
                           i [Class "swap-on fa-solid fa-moon text-xl"] []
                           i [Class "swap-off fa-solid fa-sun text-xl"] []
                       ]
-                      // Mobile menu button and dropdown
-                      div [Class "dropdown dropdown-end lg:hidden"] [
+                  ]
+                  // Mobile menu button and dropdown
+                  div [Class "navbar-end lg:hidden"] [
+                      div [Class "dropdown dropdown-end"] [
                           label [TabIndex 0; Class "btn btn-ghost"] [
                               i [Class "fa-solid fa-bars text-xl"] []
                           ]

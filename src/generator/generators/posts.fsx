@@ -35,11 +35,12 @@ let generate' (ctx : SiteContents) (_: string) =
           if i = 0 then "#"
           else "/" + getFilenameForIndex (i - 1)
   
+      // Use the same Layout.layout function with the same structure as other pages
       Layout.layout ctx "Posts" [
           section [Class "hero bg-primary text-primary-content py-24"] [
               div [Class "hero-content text-center"] [
                   div [Class "max-w-md"] [
-                      h1 [Class "text-4xl font-bold text-white"] [!!"Blog Posts"]
+                      h1 [Class "text-4xl font-bold accent"] [!!desc]
                   ]
               ]
           ]
@@ -47,8 +48,6 @@ let generate' (ctx : SiteContents) (_: string) =
               section [Class "py-8"] [
                   div [Class "max-w-3xl mx-auto"] psts
               ]
-          ]
-          div [Class "container mx-auto pb-8"] [
               div [Class "flex justify-center items-center gap-4 p-4 rounded-lg"] [
                   a [Class "btn btn-outline transition-opacity duration-500 ease-in-out"; Href previousPage] [!! "Previous"]
                   span [Class "text-sm"] [!! (sprintf "Page %i of %i" (i + 1) pages)]

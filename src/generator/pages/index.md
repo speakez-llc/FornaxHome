@@ -1,15 +1,17 @@
 ---
 layout: page
 title: Home
-author: @houstonhaynes
-published: 2025-02-28
 ---
-# Welcome to FornaxHome
 
-This is the home page of our site. Built with Fornax and Suave.
+# Welcome to SpeakEZ Yolo
 
-## Features
+SpeakEZ provides intelligent systems designed for privacy, reliability, speed, and improving your bottom line.
 
-- Static site generation with F#
-- Modern responsive design
-- Fast and lightweight
+## Our Services
+
+- Custom AI solutions
+- Privacy-focused technology
+- High-performance systems
+- Business intelligence tools
+
+[View our Blog](/posts/index.html)
