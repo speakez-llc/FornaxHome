@@ -1,4 +1,4 @@
-#r "../_lib/Fornax.Core.dll"
+#r "nuget: Fornax.Core, 0.15.1"
 #r "nuget: SharpScss, 2.0.0"
 
 open System.IO

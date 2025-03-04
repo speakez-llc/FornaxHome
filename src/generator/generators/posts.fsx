@@ -1,4 +1,4 @@
-#r "../_lib/Fornax.Core.dll"
+#r "nuget: Fornax.Core, 0.15.1"
 #load "layout.fsx"
 
 open Html
@@ -11,14 +11,14 @@ let generate' (ctx : SiteContents) (_: string) =
     |> Option.map (fun si -> si.description, si.postPageSize)
     |> Option.defaultValue ("", 10)
 
-  let psts =
+  let postList =
     posts
     |> Seq.sortByDescending Layout.published
     |> Seq.toList
     |> List.chunkBySize postPageSize
     |> List.map (List.map (Layout.postLayout true))
 
-  let pages = List.length psts
+  let pages = List.length postList
 
   let getFilenameForIndex i =
     if i = 0 then
@@ -26,7 +26,7 @@ let generate' (ctx : SiteContents) (_: string) =
     else
       sprintf "posts/page%i.html" i
 
-  let layoutForPostSet i psts =
+  let layoutForPostSet i postList =
       let nextPage =
           if i = (pages - 1) then "#"
           else "/" + getFilenameForIndex (i + 1)
@@ -35,7 +35,7 @@ let generate' (ctx : SiteContents) (_: string) =
           if i = 0 then "#"
           else "/" + getFilenameForIndex (i - 1)
   
-      // Use the same Layout.layout function with the same structure as other pages
+      // Use the Layout.layout function which now includes the navigation bar
       Layout.layout ctx "Posts" [
           section [Class "hero bg-primary text-primary-content py-24"] [
               div [Class "hero-content text-center"] [
@@ -46,7 +46,7 @@ let generate' (ctx : SiteContents) (_: string) =
           ]
           div [Class "container mx-auto px-4"] [
               section [Class "py-8"] [
-                  div [Class "max-w-3xl mx-auto"] psts
+                  div [Class "max-w-3xl mx-auto"] postList
               ]
               div [Class "flex justify-center items-center gap-4 p-4 rounded-lg"] [
                   a [Class "btn btn-outline transition-opacity duration-500 ease-in-out"; Href previousPage] [!! "Previous"]
@@ -56,7 +56,7 @@ let generate' (ctx : SiteContents) (_: string) =
           ]
       ]
 
-  psts
+  postList
   |> List.mapi (fun i psts ->
     getFilenameForIndex i,
     layoutForPostSet i psts

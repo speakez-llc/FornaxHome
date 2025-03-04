@@ -1,5 +1,5 @@
-#r "../_lib/Fornax.Core.dll"
-#r "../_lib/Markdig.dll"
+#r "nuget: Fornax.Core, 0.15.1"
+#r "nuget: Markdig, 0.40.0"
 
 open System.IO
 open Markdig

@@ -1,4 +1,4 @@
-#r "../_lib/Fornax.Core.dll"
+#r "nuget: Fornax.Core, 0.15.1"
 #if !FORNAX
 #load "../loaders/postloader.fsx"
 #load "../loaders/pageloader.fsx"
@@ -49,7 +49,6 @@ let injectWebsocketCode (webpage:string) =
     let index = webpage.IndexOf head
     webpage.Insert ( (index + head.Length + 1),websocketScript)
 
-// Fix: Change from Pageloader.Page to our own Page type
 type Page = {
     title: string
     link: string
@@ -57,34 +56,74 @@ type Page = {
     file: string
 }
 
-// Create navigation menu - extracted as a separate function for reuse
-let createNavMenu (ctx : SiteContents) (active: string) =
-    let pages = ctx.TryGetValues<Page> () |> Option.defaultValue Seq.empty
-    
-    pages
-        |> Seq.sortBy (fun p -> 
-            match p.title with
-            | "Home" -> 0      // Home comes first
-            | "Posts" -> 1     // Posts comes second
-            | "About" -> 2     // About comes third
-            | "Contact" -> 3   // Contact comes fourth
-            | _ -> 10          // All other pages come after
-        )
-        |> Seq.map (fun p ->
-          let cls = if p.title = active then "active" else ""
-          li [] [a [Class cls; Href p.link] [!! p.title]])
-        |> Seq.toList
+// Just define a simpler navigation item type for the menu
+type NavItem = {
+    title: string
+    link: string
+}
 
+// CENTRAL DEFINITION OF NAVIGATION
+// This is the single source of truth for standard navigation across all pages
+let getStandardNavigation () =
+    [
+        { NavItem.title = "Home"; link = "/" }
+        { NavItem.title = "Posts"; link = "/posts/index.html" }
+        { NavItem.title = "About"; link = "/about.html" }
+        { NavItem.title = "Contact"; link = "/contact.html" }
+    ]
+
+// Creates a consistent navigation bar for all pages
+let createNavBar (active: string) =
+    let menuEntries =
+        getStandardNavigation()
+        |> List.map (fun p ->
+            let cls = if p.title = active then "active" else ""
+            li [] [a [Class cls; Href p.link] [!! p.title]])
+
+    nav [Class "navbar"] [
+        div [Class "container flex justify-between mx-auto items-center w-full"] [
+            div [Class "navbar-start"] [
+                a [Class "btn btn-ghost text-xl"; Href "/"] [
+                    img [Src "/images/SpeakEZ_standard.png"; Alt "Logo"; Class "h-8 mr-2"]
+                ]
+            ]
+            div [Class "navbar-center hidden lg:flex items-center"] [
+                ul [Class "menu menu-horizontal px-1"] menuEntries
+                label [Class "swap swap-rotate ml-4"] [
+                    input [Type "checkbox"; Class "theme-controller"; HtmlProperties.Custom ("data-toggle-theme", "business,corporate")]
+                    i [Class "swap-on fa-solid fa-moon text-xl"] []
+                    i [Class "swap-off fa-solid fa-sun text-xl"] []
+                ]
+            ]
+            div [Class "navbar-end lg:hidden"] [
+                div [Class "dropdown dropdown-end"] [
+                    label [TabIndex 0; Class "btn btn-ghost"] [
+                        i [Class "fa-solid fa-bars text-xl"] []
+                    ]
+                    ul [TabIndex 0; Class "dropdown-content menu menu-vertical mt-3 p-2 shadow bg-base-100 rounded-box w-52"] [
+                        yield! menuEntries
+                        li [] [
+                            label [Class "swap swap-rotate justify-center"] [
+                                input [Type "checkbox"; Class "theme-controller"; HtmlProperties.Custom ("data-toggle-theme", "business,corporate")]
+                                i [Class "swap-on fa-solid fa-moon text-xl"] []
+                                i [Class "swap-off fa-solid fa-sun text-xl"] []
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ]
+
+// Core layout function that all generators should use
 let layout (ctx : SiteContents) active bodyCnt =
-    let pages = ctx.TryGetValues<Page> () |> Option.defaultValue Seq.empty
     let siteInfo = ctx.TryGetValue<Globalloader.SiteInfo> ()
     let ttl =
       siteInfo
       |> Option.map (fun si -> si.title)
       |> Option.defaultValue ""
 
-    // Use createNavMenu function to get menu entries
-    let menuEntries = createNavMenu ctx active
+    let navBar = createNavBar active
 
     html [] [
         head [] [
@@ -102,45 +141,8 @@ let layout (ctx : SiteContents) active bodyCnt =
             script [Src "https://kit.fontawesome.com/3e50397676.js"; CrossOrigin "anonymous"] []
         ]
         body [] [
-          nav [Class "navbar"] [
-              div [Class "container flex justify-between mx-auto items-center w-full"] [
-                  // Logo section - stays the same
-                  div [Class "navbar-start"] [
-                      a [Class "btn btn-ghost text-xl"; Href "/"] [
-                          img [Src "/images/SpeakEZ_standard.png"; Alt "Logo"; Class "h-8 mr-2"]
-                      ]
-                  ]
-                  // Desktop menu
-                  div [Class "navbar-center hidden lg:flex items-center"] [
-                      ul [Class "menu menu-horizontal px-1"] menuEntries
-                      // Theme switcher for desktop
-                      label [Class "swap swap-rotate ml-4"] [
-                          input [Type "checkbox"; Class "theme-controller"; HtmlProperties.Custom ("data-toggle-theme", "business,corporate")]
-                          i [Class "swap-on fa-solid fa-moon text-xl"] []
-                          i [Class "swap-off fa-solid fa-sun text-xl"] []
-                      ]
-                  ]
-                  // Mobile menu button and dropdown
-                  div [Class "navbar-end lg:hidden"] [
-                      div [Class "dropdown dropdown-end"] [
-                          label [TabIndex 0; Class "btn btn-ghost"] [
-                              i [Class "fa-solid fa-bars text-xl"] []
-                          ]
-                          ul [TabIndex 0; Class "dropdown-content menu menu-vertical mt-3 p-2 shadow bg-base-100 rounded-box w-52"] [
-                              yield! menuEntries
-                              li [] [
-                                  label [Class "swap swap-rotate justify-center"] [
-                                      input [Type "checkbox"; Class "theme-controller"; HtmlProperties.Custom ("data-toggle-theme", "business,corporate")]
-                                      i [Class "swap-on fa-solid fa-moon text-xl"] []
-                                      i [Class "swap-off fa-solid fa-sun text-xl"] []
-                                  ]
-                              ]
-                          ]
-                      ]
-                  ]
-              ]
-          ]
-          yield! bodyCnt
+            navBar
+            yield! bodyCnt
         ]
     ]
 

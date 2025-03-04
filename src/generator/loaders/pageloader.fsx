@@ -1,12 +1,16 @@
-#r "../_lib/Fornax.Core.dll"
-#r "../_lib/Markdig.dll"
-#load "layout.fsx"
+#r "nuget: Fornax.Core, 0.15.1"
+#r "nuget: Markdig, 0.40.0"
 
 open System.IO
 open System
 
-// Use the Layout.Page type since that's the single source of truth
-type Page = Layout.Page
+// Define Page type directly here instead of referencing Layout.Page
+type Page = {
+    title: string
+    link: string
+    content: string
+    file: string
+}
 
 let markdownPipeline =
     let pipeline = new Markdig.MarkdownPipelineBuilder()
@@ -75,7 +79,7 @@ let loadFile (rootDir: string) (n: string) =
                                 fileName + ".md").Replace("\\", "/")
 
         Some {
-            Layout.Page.title = title
+            title = title
             link = link
             content = content
             file = file
