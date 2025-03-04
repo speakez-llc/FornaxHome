@@ -32,7 +32,6 @@ let isSeparator (input : string) =
 let isSummarySeparator (input: string) =
     input.Contains "<!--more-->"
 
-
 ///`fileContent` - content of page to parse. Usually whole content of `.md` file
 ///returns content of config that should be used for the page
 let getConfig (fileContent : string) =
@@ -125,5 +124,5 @@ let loader (projectRoot: string) (siteContent: SiteContents) =
     |> Array.map (loadFile projectRoot)
     |> Array.iter siteContent.Add
 
-    siteContent.Add({disableLiveRefresh = false})
+    siteContent.Add({PostConfig.disableLiveRefresh = false})
     siteContent

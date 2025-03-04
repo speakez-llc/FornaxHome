@@ -47,9 +47,9 @@ let injectWebsocketCode (webpage:string) =
         """
     let head = "<head>"
     let index = webpage.IndexOf head
-    webpage.Insert ((index + head.Length + 1), websocketScript)
+    webpage.Insert ( (index + head.Length + 1),websocketScript)
 
-// Define Page type directly in layout.fsx - this is the single source of truth
+// Fix: Change from Pageloader.Page to our own Page type
 type Page = {
     title: string
     link: string
@@ -57,35 +57,34 @@ type Page = {
     file: string
 }
 
-let layout (ctx : SiteContents) active bodyCnt =
-    // Define standard navigation directly here - the ONLY place it's defined
-    let standardNavigation = [
-        { title = "Home"; link = "/"; content = ""; file = "index.md" }
-        { title = "Posts"; link = "/posts/index.html"; content = ""; file = "posts.md" }
-        { title = "About"; link = "/about.html"; content = ""; file = "about.md" }
-        { title = "Contact"; link = "/contact.html"; content = ""; file = "contact.md" }
-    ]
+// Create navigation menu - extracted as a separate function for reuse
+let createNavMenu (ctx : SiteContents) (active: string) =
+    let pages = ctx.TryGetValues<Page> () |> Option.defaultValue Seq.empty
     
+    pages
+        |> Seq.sortBy (fun p -> 
+            match p.title with
+            | "Home" -> 0      // Home comes first
+            | "Posts" -> 1     // Posts comes second
+            | "About" -> 2     // About comes third
+            | "Contact" -> 3   // Contact comes fourth
+            | _ -> 10          // All other pages come after
+        )
+        |> Seq.map (fun p ->
+          let cls = if p.title = active then "active" else ""
+          li [] [a [Class cls; Href p.link] [!! p.title]])
+        |> Seq.toList
+
+let layout (ctx : SiteContents) active bodyCnt =
+    let pages = ctx.TryGetValues<Page> () |> Option.defaultValue Seq.empty
     let siteInfo = ctx.TryGetValue<Globalloader.SiteInfo> ()
     let ttl =
       siteInfo
       |> Option.map (fun si -> si.title)
       |> Option.defaultValue ""
 
-    let menuEntries =
-      standardNavigation
-        |> Seq.sortBy (fun p -> 
-            match p.title with
-            | "Home" -> 0
-            | "Posts" -> 1
-            | "About" -> 2
-            | "Contact" -> 3
-            | _ -> 10
-        )
-        |> Seq.map (fun p ->
-          let cls = if p.title = active then "active" else ""
-          li [] [a [Class cls; Href p.link] [!! p.title]])
-        |> Seq.toList
+    // Use createNavMenu function to get menu entries
+    let menuEntries = createNavMenu ctx active
 
     html [] [
         head [] [
@@ -111,8 +110,8 @@ let layout (ctx : SiteContents) active bodyCnt =
                           img [Src "/images/SpeakEZ_standard.png"; Alt "Logo"; Class "h-8 mr-2"]
                       ]
                   ]
-                  // Desktop menu - ensure it's centered
-                  div [Class "navbar-center hidden lg:flex items-center justify-center"] [
+                  // Desktop menu
+                  div [Class "navbar-center hidden lg:flex items-center"] [
                       ul [Class "menu menu-horizontal px-1"] menuEntries
                       // Theme switcher for desktop
                       label [Class "swap swap-rotate ml-4"] [
