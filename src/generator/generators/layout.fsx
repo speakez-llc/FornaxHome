@@ -61,8 +61,11 @@ let layout (ctx : SiteContents) active bodyCnt =
         pages
             |> Seq.sortBy (fun p -> 
                 match p.title with
-                | "Home" -> 0  // Home comes first
-                | _ -> 1       // All other pages come after
+                | "Home" -> 0      // Home comes first
+                | "Posts" -> 1     // Posts comes second 
+                | "About" -> 2     // About comes third
+                | "Contact" -> 3   // Contact comes fourth
+                | _ -> 10          // All other pages come after
             )
             |> Seq.map (fun p ->
             let cls = if p.title = active then "active" else ""

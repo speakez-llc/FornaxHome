@@ -24,20 +24,36 @@ let titleFromPath (filePath: string) =
 let loader (projectRoot: string) (siteContent: SiteContents) =
     let pagesPath = Path.Combine(projectRoot, "pages")
     
-    Directory.GetFiles(pagesPath, "*.md", SearchOption.AllDirectories)
-    |> Array.filter isValidPage
-    |> Array.map (fun filePath ->
-        let link = 
-            filePath.Substring(pagesPath.Length)
-                .Replace("\\", "/")
-                .Replace(".md", ".html")
-                .Replace("index.html", "/")
-        let content = File.ReadAllText filePath
-        {
-            title = titleFromPath filePath
-            link = link
-            content = content
-        })
-    |> Array.iter siteContent.Add
+    // Create standard pages
+    let standardPages = [
+        { title = "Home"; link = "/"; content = "" }
+        { title = "Posts"; link = "/posts/index.html"; content = "" }
+        { title = "About"; link = "/about.html"; content = "" }
+        { title = "Contact"; link = "/contact.html"; content = "" }
+    ]
+    
+    // Add all standard pages to site content
+    standardPages |> List.iter siteContent.Add
+    
+    // Also add any additional .md pages from the pages folder
+    if Directory.Exists(pagesPath) then
+        Directory.GetFiles(pagesPath, "*.md", SearchOption.AllDirectories)
+        |> Array.filter isValidPage
+        |> Array.map (fun filePath ->
+            let fileName = Path.GetFileNameWithoutExtension(filePath)
+            // Skip files that are already handled by standard pages
+            if ["index"; "posts"; "about"; "contact"] |> List.contains fileName then
+                None
+            else
+                let link = "/" + fileName + ".html"
+                let content = File.ReadAllText filePath
+                Some {
+                    title = titleFromPath filePath
+                    link = link
+                    content = content
+                }
+        )
+        |> Array.choose id
+        |> Array.iter siteContent.Add
 
     siteContent

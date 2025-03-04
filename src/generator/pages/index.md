@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Welcome to SpeakEZ's Home Page
+title: Home
 author: @houstonhaynes
 published: 2025-02-28
 ---
