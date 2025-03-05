@@ -22,8 +22,26 @@ let contentDir = "posts"
 
 let markdownPipeline =
     MarkdownPipelineBuilder()
-        .UsePipeTables()
+        .UseAdvancedExtensions()
+        .UseAutoIdentifiers()
+        .UseAutoLinks()
+        .UseCitations()
+        .UseCustomContainers()
+        .UseDefinitionLists()
+        .UseEmphasisExtras()
+        .UseFigures()
+        .UseFooters()
+        .UseFootnotes()
+        .UseGenericAttributes()
         .UseGridTables()
+        .UseListExtras()
+        .UseMathematics()
+        .UseMediaLinks()
+        .UsePipeTables()
+        .UsePragmaLines()
+        .UseSmartyPants()
+        .UseTaskLists()
+        .UseYamlFrontMatter()
         .Build()
 
 let isSeparator (input : string) =

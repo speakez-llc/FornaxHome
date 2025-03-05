@@ -10,7 +10,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi nisi diam, vehicu
 
 <!--more-->
 
-~~~fsharp
+```fsharp
 open System
 
 let config = {
@@ -25,8 +25,7 @@ let config = {
         {Script = "tailwind.fsx"; Trigger = OnFileExt ".css"; OutputFile = SameFileName }
     ]
 }
-
-~~~
+```
 
 Phasellus aliquam tellus eu augue vulputate laoreet. Nunc tincidunt sed mauris eu vestibulum. Quisque id ex eget erat elementum euismod vel nec ex. Nunc et blandit neque. Duis erat ex, facilisis non consectetur sit amet, consectetur mattis ex. Vestibulum quis ligula pharetra, semper nibh nec, porta augue. In placerat auctor risus, eu dictum purus iaculis et. Vivamus viverra sollicitudin augue, in sollicitudin leo malesuada non.
 

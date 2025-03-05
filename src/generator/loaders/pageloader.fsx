@@ -3,6 +3,7 @@
 
 open System.IO
 open System
+open Markdig
 
 // Define Page type directly here instead of referencing Layout.Page
 type Page = {
@@ -13,8 +14,28 @@ type Page = {
 }
 
 let markdownPipeline =
-    let pipeline = new Markdig.MarkdownPipelineBuilder()
-    pipeline.Build()
+    MarkdownPipelineBuilder()
+        .UseAdvancedExtensions()
+        .UseAutoIdentifiers()
+        .UseAutoLinks()
+        .UseCitations()
+        .UseCustomContainers()
+        .UseDefinitionLists()
+        .UseEmphasisExtras()
+        .UseFigures()
+        .UseFooters()
+        .UseFootnotes()
+        .UseGenericAttributes()
+        .UseGridTables()
+        .UseListExtras()
+        .UseMathematics()
+        .UseMediaLinks()
+        .UsePipeTables()
+        .UsePragmaLines()
+        .UseSmartyPants()
+        .UseTaskLists()
+        .UseYamlFrontMatter()
+        .Build()
 
 let getConfig (fileContent : string) =
     let fileContent = fileContent.Split '\n'
