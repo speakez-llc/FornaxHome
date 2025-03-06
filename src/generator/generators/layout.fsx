@@ -1,13 +1,21 @@
 #r "nuget: Fornax.Core, 0.15.1"
-#load "types.fsx"
-#load "../loaders/globalloader.fsx"
+#r "nuget: Markdig, 0.40.0" 
+#if !FORNAX
 #load "../loaders/postloader.fsx"
+#load "../loaders/globalloader.fsx"
+#endif
 
 open Html
-open Types
 
-/// Injects websocket code for live reload functionality
-let injectWebsocketCode (webpage: string) =
+// Page type definition for navigation
+type Page = {
+    title: string
+    link: string
+    content: string
+    file: string
+}
+
+let injectWebsocketCode (webpage:string) =
     let websocketScript =
         """
         <script type="text/javascript">
@@ -47,19 +55,18 @@ let injectWebsocketCode (webpage: string) =
         """
     let head = "<head>"
     let index = webpage.IndexOf head
-    webpage.Insert((index + head.Length + 1), websocketScript)
+    webpage.Insert ( (index + head.Length + 1),websocketScript)
 
-/// Main layout function for site pages
-let layout (ctx: SiteContents) (activePageTitle: string) (bodyContent: HtmlElement list) =
-    let pages = ctx.TryGetValues<Types.Page>() |> Option.defaultValue Seq.empty
-    let siteInfo = ctx.TryGetValue<Globalloader.SiteInfo>()
-    let siteTitle =
-        siteInfo
-        |> Option.map (fun si -> si.title)
-        |> Option.defaultValue "My Site"
+let layout (ctx : SiteContents) active bodyCnt =
+    let pages = ctx.TryGetValues<Page> () |> Option.defaultValue Seq.empty
+    let siteInfo = ctx.TryGetValue<Globalloader.SiteInfo> ()
+    let ttl =
+      siteInfo
+      |> Option.map (fun si -> si.title)
+      |> Option.defaultValue ""
 
     let menuEntries =
-        pages
+      pages
         |> Seq.sortBy (fun p -> 
             match p.title with
             | "Home" -> 0      // Home comes first
@@ -69,96 +76,89 @@ let layout (ctx: SiteContents) (activePageTitle: string) (bodyContent: HtmlEleme
             | _ -> 10          // All other pages come after
         )
         |> Seq.map (fun p ->
-            let cls = if p.title = activePageTitle then "active" else ""
-            li [] [a [Class cls; Href p.link] [!! p.title]])
+          let cls = if p.title = active then "active" else ""
+          li [] [a [Class cls; Href p.link] [!! p.title]])
         |> Seq.toList
 
     html [] [
         head [] [
             meta [CharSet "utf-8"]
             meta [Name "viewport"; Content "width=device-width, initial-scale=1"]
-            title [] [!! siteTitle]
+            title [] [!! ttl]
             link [Rel "icon"; Type "image/ico"; Sizes "32x32"; Href "/images/favicon.ico"]
             link [Rel "stylesheet"; Href "https://cdn.jsdelivr.net/npm/tailwindcss@2.2/dist/tailwind.min.css"]
             link [Rel "stylesheet"; Href "https://cdn.jsdelivr.net/npm/daisyui@3.7.4/dist/full.css"]
             link [Rel "stylesheet"; Href "https://fonts.googleapis.com/css?family=Varela+Round"]
-            link [Rel "stylesheet"; Href "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css"]
-            script [Src "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"] []
+            link [Rel "stylesheet"; Href "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/styles/default.min.css"]
+            script [Src "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/highlight.min.js"] []
+            script [Src "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/fsharp.min.js"] []
+
             script [] [!! "document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());"]
             link [Rel "stylesheet"; Type "text/css"; Href "/style/style.css"]
             script [Src "https://kit.fontawesome.com/3e50397676.js"; CrossOrigin "anonymous"] []
         ]
         body [] [
-            nav [Class "navbar"] [
-                div [Class "container flex justify-between mx-auto items-center w-full"] [
-                    // Logo section
-                    div [Class "navbar-start"] [
-                        a [Class "btn btn-ghost text-xl"; Href "/"] [
-                            img [Src "/images/SpeakEZ_standard.png"; Alt "Logo"; Class "h-8 mr-2"]
-                        ]
-                    ]
-                    // Desktop menu
-                    div [Class "navbar-center hidden lg:flex items-center"] [
-                        ul [Class "menu menu-horizontal px-1"] menuEntries
-                        // Theme switcher for desktop
-                        label [Class "swap swap-rotate ml-4"] [
-                            input [Type "checkbox"; Class "theme-controller"; HtmlProperties.Custom ("data-toggle-theme", "business,corporate")]
-                            i [Class "swap-on fa-solid fa-moon text-xl"] []
-                            i [Class "swap-off fa-solid fa-sun text-xl"] []
-                        ]
-                    ]
-                    // Mobile menu button and dropdown
-                    div [Class "navbar-end lg:hidden"] [
-                        div [Class "dropdown dropdown-end"] [
-                            label [TabIndex 0; Class "btn btn-ghost"] [
-                                i [Class "fa-solid fa-bars text-xl"] []
-                            ]
-                            ul [TabIndex 0; Class "dropdown-content menu menu-vertical mt-3 p-2 shadow bg-base-100 rounded-box w-52"] [
-                                yield! menuEntries
-                                li [] [
-                                    label [Class "swap swap-rotate justify-center"] [
-                                        input [Type "checkbox"; Class "theme-controller"; HtmlProperties.Custom ("data-toggle-theme", "business,corporate")]
-                                        i [Class "swap-on fa-solid fa-moon text-xl"] []
-                                        i [Class "swap-off fa-solid fa-sun text-xl"] []
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-            yield! bodyContent
+          nav [Class "navbar"] [
+              div [Class "container flex justify-between mx-auto items-center w-full"] [
+                  // Logo section - stays the same
+                  div [Class "navbar-start"] [
+                      a [Class "btn btn-ghost text-xl"; Href "/"] [
+                          img [Src "/images/SpeakEZ_standard.png"; Alt "Logo"; Class "h-8 mr-2"]
+                      ]
+                  ]
+                  // Desktop menu
+                  div [Class "navbar-center hidden lg:flex items-center"] [
+                      ul [Class "menu menu-horizontal px-1"] menuEntries
+                      // Theme switcher for desktop
+                      label [Class "swap swap-rotate ml-4"] [
+                          input [Type "checkbox"; Class "theme-controller"; HtmlProperties.Custom ("data-toggle-theme", "business,corporate")]
+                          i [Class "swap-on fa-solid fa-moon text-xl"] []
+                          i [Class "swap-off fa-solid fa-sun text-xl"] []
+                      ]
+                  ]
+                  // Mobile menu button and dropdown
+                  div [Class "navbar-end lg:hidden"] [
+                      div [Class "dropdown dropdown-end"] [
+                          label [TabIndex 0; Class "btn btn-ghost"] [
+                              i [Class "fa-solid fa-bars text-xl"] []
+                          ]
+                          ul [TabIndex 0; Class "dropdown-content menu menu-vertical mt-3 p-2 shadow bg-base-100 rounded-box w-52"] [
+                              yield! menuEntries
+                              li [] [
+                                  label [Class "swap swap-rotate justify-center"] [
+                                      input [Type "checkbox"; Class "theme-controller"; HtmlProperties.Custom ("data-toggle-theme", "business,corporate")]
+                                      i [Class "swap-on fa-solid fa-moon text-xl"] []
+                                      i [Class "swap-off fa-solid fa-sun text-xl"] []
+                                  ]
+                              ]
+                          ]
+                      ]
+                  ]
+              ]
+          ]
+          yield! bodyCnt
         ]
     ]
 
-/// Renders the HTML with optional websocket code injection
-let render (ctx: SiteContents) (content: HtmlElement) =
-    let disableLiveRefresh = 
-        ctx.TryGetValue<Postloader.PostConfig>() 
-        |> Option.map (fun n -> n.disableLiveRefresh) 
-        |> Option.defaultValue false
-        
-    content
-    |> HtmlElement.ToString
-    |> fun n -> if disableLiveRefresh then n else injectWebsocketCode n
+let render (ctx : SiteContents) cnt =
+  let disableLiveRefresh = ctx.TryGetValue<Postloader.PostConfig> () |> Option.map (fun n -> n.disableLiveRefresh) |> Option.defaultValue false
+  cnt
+  |> HtmlElement.ToString
+  |> fun n -> if disableLiveRefresh then n else injectWebsocketCode n
 
-/// Formats the publication date for posts
 let published (post: Postloader.Post) =
     post.published
     |> Option.defaultValue System.DateTime.Now
     |> fun n -> n.ToString("yyyy-MM-dd")
 
-/// Generates the HTML for a post
 let postLayout (useSummary: bool) (post: Postloader.Post) =
     div [Class "card w-full bg-base-100 shadow-xl mb-6"] [
         div [Class "card-body"] [
             div [Class "text-center"] [
-                h2 [Class "card-title justify-center"] [
-                    a [Href post.link] [!! post.title]
-                ]
+                h2 [Class "card-title justify-center"] [ a [Href post.link] [!! post.title]]
                 p [Class "text-sm opacity-70"] [
-                    a [Href "#"] [!! (defaultArg post.author "")]
-                    !! (sprintf " on %s" (published post))
+                a [Href "#"] [!! (defaultArg post.author "")]
+                !! (sprintf " on %s" (published post))
                 ]
             ]
             div [Class "mt-4 prose lg:prose-lg"] [
