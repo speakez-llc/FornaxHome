@@ -2,6 +2,7 @@
 #load "layout.fsx"
 
 open Html
+open System.IO
 
 let generate' (ctx : SiteContents) (page: string) =
     let postOption =
@@ -48,5 +49,29 @@ let generate' (ctx : SiteContents) (page: string) =
         ]
 
 let generate (ctx : SiteContents) (projectRoot: string) (page: string) =
-    generate' ctx page
-    |> Layout.render ctx
+    try
+        let rendered = generate' ctx page
+
+        // Figure out the relative path within "posts"
+        // e.g. "posts/page1.md" -> "page1.html"
+        //      "posts/subfolder/post.md" -> "subfolder/post.html"
+        let relativePathInPosts =
+            page.TrimStart([|'p';'o';'s';'t';'s';'\\';'/'|])  // remove leading "posts/" or "posts\"
+            |> Path.ChangeExtension ".html"
+
+        // Combine everything into _public/posts
+        let outputPath = 
+            Path.Combine(projectRoot, "_public", "posts", relativePathInPosts)
+
+        Directory.CreateDirectory(Path.GetDirectoryName(outputPath)) |> ignore
+        
+        // Convert HtmlElement to string and write to file
+        let html = Layout.render ctx rendered
+        File.WriteAllText(outputPath, html)
+        
+        printfn "Generated post at: %s" outputPath
+    with ex ->
+        printfn "Error generating post %s: %s" page ex.Message
+        
+    // Return empty list as expected by Fornax
+    []

@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Some nice post title
+title: Code Excerpt
 author: @houstonhaynes
 published: 2020-02-19
 ---

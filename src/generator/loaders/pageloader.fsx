@@ -2,7 +2,6 @@
 #r "nuget: Markdig, 0.40.0"
 
 open System.IO
-open System
 open Markdig
 
 // Define Page type directly here instead of referencing Layout.Page

@@ -136,9 +136,19 @@ let layout (ctx : SiteContents) active bodyCnt =
             link [Rel "stylesheet"; Href "https://fonts.googleapis.com/css?family=Varela+Round"]
             link [Rel "stylesheet"; Href "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css"]
             script [Src "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"] []
+            script [Src "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/fsharp.min.js"] []
             script [] [!! "document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());"]
             link [Rel "stylesheet"; Type "text/css"; Href "/style/style.css"]
             script [Src "https://kit.fontawesome.com/3e50397676.js"; CrossOrigin "anonymous"] []
+            script [Src "https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"] []
+            script [] [!! """
+            document.addEventListener('DOMContentLoaded', function() {
+                mermaid.initialize({
+                startOnLoad: true,
+                theme: 'neutral'
+                });
+            });
+            """]
         ]
         body [] [
             navBar

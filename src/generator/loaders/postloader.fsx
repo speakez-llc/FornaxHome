@@ -25,7 +25,6 @@ let markdownPipeline =
         .UseAdvancedExtensions()
         .UseAutoIdentifiers()
         .UseAutoLinks()
-        .UseCitations()
         .UseCustomContainers()
         .UseDefinitionLists()
         .UseEmphasisExtras()
@@ -41,7 +40,6 @@ let markdownPipeline =
         .UsePragmaLines()
         .UseSmartyPants()
         .UseTaskLists()
-        .UseYamlFrontMatter()
         .Build()
 
 let isSeparator (input : string) =
