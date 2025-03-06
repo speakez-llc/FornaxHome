@@ -89,7 +89,7 @@ let layout (ctx : SiteContents) active bodyCnt =
             link [Rel "stylesheet"; Href "https://cdn.jsdelivr.net/npm/tailwindcss@2.2/dist/tailwind.min.css"]
             link [Rel "stylesheet"; Href "https://cdn.jsdelivr.net/npm/daisyui@3.7.4/dist/full.css"]
             link [Rel "stylesheet"; Href "https://fonts.googleapis.com/css?family=Varela+Round"]
-            link [Rel "stylesheet"; Href "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/styles/default.min.css"]
+            link [Rel "stylesheet"; Href "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/styles/dark.min.css"]
             script [Src "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/highlight.min.js"] []
             script [Src "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/fsharp.min.js"] []
 
