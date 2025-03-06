@@ -2,8 +2,9 @@
 #r "nuget: Markdig, 0.40.0"
 
 open System.IO
-open Markdig
+open System
 
+// Define Page type directly here
 type Page = {
     title: string
     link: string
@@ -12,26 +13,8 @@ type Page = {
 }
 
 let markdownPipeline =
-    MarkdownPipelineBuilder()
-        .UseAdvancedExtensions()
-        .UseAutoIdentifiers()
-        .UseAutoLinks()
-        .UseCustomContainers()
-        .UseDefinitionLists()
-        .UseEmphasisExtras()
-        .UseFigures()
-        .UseFooters()
-        .UseFootnotes()
-        .UseGenericAttributes()
-        .UseGridTables()
-        .UseListExtras()
-        .UseMathematics()
-        .UseMediaLinks()
-        .UsePipeTables()
-        .UsePragmaLines()
-        .UseSmartyPants()
-        .UseTaskLists()
-        .Build()
+    let pipeline = new Markdig.MarkdownPipelineBuilder()
+    pipeline.Build()
 
 let getConfig (fileContent : string) =
     let fileContent = fileContent.Split '\n'
@@ -92,8 +75,11 @@ let loadFile (rootDir: string) (n: string) =
             if rootDir.EndsWith(Path.DirectorySeparatorChar) then rootDir.Length
             else rootDir.Length + 1
 
+        // Store the full path to the file in the pages directory
         let file = Path.Combine(n |> Path.GetDirectoryName |> fun x -> x.[chopLength .. ], 
-                            fileName + ".md").Replace("\\", "/")
+                                fileName + ".md").Replace("\\", "/")
+
+        printfn "Loaded page: %s (file: %s, link: %s)" title file link
 
         Some {
             title = title
@@ -106,7 +92,12 @@ let loadFile (rootDir: string) (n: string) =
         None
 
 let loader (projectRoot: string) (siteContent: SiteContents) =
-    // Always add standard pages
+    printfn "Loading pages from: %s" projectRoot
+    
+    // First, clear any existing pages
+    siteContent.Remove<Page>() |> ignore
+    
+    // Add standard pages
     let standardPages = [
         { 
             title = "Home"
@@ -135,34 +126,37 @@ let loader (projectRoot: string) (siteContent: SiteContents) =
     ]
     
     // Add standard pages to content
-    standardPages |> List.iter siteContent.Add
+    printfn "Adding standard pages:"
+    standardPages |> List.iter (fun p -> 
+        printfn "  - %s (%s)" p.title p.file
+        siteContent.Add(p)
+    )
     
-    // Also load actual content from Markdown files
+    // Load actual content from Markdown files
     let pagesPath = Path.Combine(projectRoot, "pages")
     
     if Directory.Exists(pagesPath) then
+        printfn "Found pages directory: %s" pagesPath
         try
-            Directory.GetFiles(pagesPath, "*.md", SearchOption.AllDirectories)
+            let pageFiles = Directory.GetFiles(pagesPath, "*.md", SearchOption.AllDirectories)
+            printfn "Found %d page files" pageFiles.Length
+            
+            pageFiles
             |> Array.filter (fun p -> not (Path.GetFileName(p).StartsWith("_")))
-            |> Array.choose (loadFile pagesPath)
+            |> Array.choose (loadFile projectRoot)
             |> Array.iter (fun page -> 
-                // Update the page content but keep the standard page entry
-                let existingPages = siteContent.TryGetValues<Page>() |> Option.defaultValue Seq.empty
-                let existing = existingPages |> Seq.tryFind (fun p -> p.title = page.title)
-                
-                match existing with
-                | Some _ -> 
-                    // Replace the existing page
-                    siteContent.Remove<Page>() |> ignore
-                    existingPages 
-                    |> Seq.filter (fun p -> p.title <> page.title)
-                    |> Seq.append [page]
-                    |> Seq.iter siteContent.Add
-                | None -> 
-                    // Add as a new page
-                    siteContent.Add(page)
+                // Always add the page content
+                siteContent.Add(page)
+                printfn "Added page %s with content" page.title
             )
         with ex ->
             printfn "Error loading pages: %s" ex.Message
+    else
+        printfn "Warning: Pages directory not found at %s" pagesPath
+    
+    // Debug: show what's in siteContent
+    let loadedPages = siteContent.TryGetValues<Page>() |> Option.defaultValue Seq.empty
+    printfn "Loaded %d pages in total:" (Seq.length loadedPages)
+    loadedPages |> Seq.iter (fun p -> printfn "  - %s (%s)" p.title p.file)
 
     siteContent

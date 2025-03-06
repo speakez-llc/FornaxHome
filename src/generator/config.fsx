@@ -3,9 +3,8 @@
 open Config
 open System.IO
 
-/// Predicate for identifying post files
 let postPredicate (projectRoot: string, page: string) =
-    let fileName = Path.Combine(projectRoot, page)
+    let fileName = Path.Combine(projectRoot,page)
     let ext = Path.GetExtension page
     if ext = ".md" then
         let ctn = File.ReadAllText fileName
@@ -14,7 +13,6 @@ let postPredicate (projectRoot: string, page: string) =
     else
         false
 
-/// Predicate for identifying page files
 let pagePredicate (projectRoot: string, page: string) =
     let fileName = Path.Combine(projectRoot, page)
     let ext = Path.GetExtension page
@@ -27,7 +25,6 @@ let pagePredicate (projectRoot: string, page: string) =
     
     isPage
 
-/// Predicate for identifying static files to copy
 let staticPredicate (projectRoot: string, page: string) =
     let ext = Path.GetExtension page
     let fileShouldBeExcluded =
@@ -45,13 +42,20 @@ let staticPredicate (projectRoot: string, page: string) =
         page.Contains ".ionide"
     fileShouldBeExcluded |> not
 
-/// Configuration for the site
+// Function to output page files at root level
+let pageOutput (page: string) =
+    let fileName = Path.GetFileNameWithoutExtension(page)
+    if fileName.ToLower() = "index" then
+        "index.html"
+    else
+        fileName + ".html"
+
 let config = {
     Generators = [
         {Script = "less.fsx"; Trigger = OnFileExt ".less"; OutputFile = ChangeExtension "css" }
         {Script = "sass.fsx"; Trigger = OnFileExt ".scss"; OutputFile = ChangeExtension "css" }
-        {Script = "page.fsx"; Trigger = OnFilePredicate pagePredicate; OutputFile = ChangeExtension "html" }
         {Script = "post.fsx"; Trigger = OnFilePredicate postPredicate; OutputFile = ChangeExtension "html" }
+        {Script = "page.fsx"; Trigger = OnFilePredicate pagePredicate; OutputFile = Custom pageOutput }
         {Script = "staticfile.fsx"; Trigger = OnFilePredicate staticPredicate; OutputFile = SameFileName }
         {Script = "posts.fsx"; Trigger = Once; OutputFile = MultipleFiles id }
         {Script = "tailwind.fsx"; Trigger = OnFileExt ".css"; OutputFile = SameFileName }
