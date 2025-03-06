@@ -48,19 +48,19 @@ let generate' (ctx : SiteContents) (page: string) =
             ]
         ]
     | None ->
-        // Page not found
-        Layout.layout ctx "Page Not Found" [
-            div [Class "container mx-auto px-4 py-8"] [
-                div [Class "card bg-warning text-warning-content max-w-md mx-auto"] [
-                    div [Class "card-body"] [
-                        h2 [Class "card-title"] [!!"Page Not Found"]
-                        p [] [!!(sprintf "The page '%s' could not be found." page)]
-                        a [Class "btn"; Href "/"] [!!"Return Home"]
-                    ]
-                ]
-            ]
-        ]
+        // Critical error - page not found
+        // This will halt the Fornax process
+        failwithf "ERROR: Page '%s' not found in site contents. Available pages: %A" 
+            page 
+            (pages |> Seq.map (fun p -> p.file) |> Seq.toArray)
 
 let generate (ctx : SiteContents) (projectRoot: string) (page: string) =
-    let content = generate' ctx page
-    Layout.render ctx content
+    try
+        let content = generate' ctx page
+        Layout.render ctx content
+    with ex ->
+        // Critical error - halt the process
+        printfn "CRITICAL ERROR in page generator: %s" ex.Message
+        printfn "Page: %s" page
+        printfn "Stack trace: %s" ex.StackTrace
+        failwith ex.Message  // Re-throw to ensure Fornax stops
