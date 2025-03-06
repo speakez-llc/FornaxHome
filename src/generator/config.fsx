@@ -50,11 +50,10 @@ let config = {
     Generators = [
         {Script = "less.fsx"; Trigger = OnFileExt ".less"; OutputFile = ChangeExtension "css" }
         {Script = "sass.fsx"; Trigger = OnFileExt ".scss"; OutputFile = ChangeExtension "css" }
-        {Script = "post.fsx"; Trigger = OnFilePredicate postPredicate; OutputFile = ChangeExtension "html" }
         {Script = "page.fsx"; Trigger = OnFilePredicate pagePredicate; OutputFile = ChangeExtension "html" }
+        {Script = "post.fsx"; Trigger = OnFilePredicate postPredicate; OutputFile = ChangeExtension "html" }
         {Script = "staticfile.fsx"; Trigger = OnFilePredicate staticPredicate; OutputFile = SameFileName }
         {Script = "posts.fsx"; Trigger = Once; OutputFile = MultipleFiles id }
-        {Script = "index.fsx"; Trigger = Once; OutputFile = NewFileName "index.html" }
         {Script = "tailwind.fsx"; Trigger = OnFileExt ".css"; OutputFile = SameFileName }
     ]
 }
