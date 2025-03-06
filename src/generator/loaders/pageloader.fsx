@@ -1,23 +1,16 @@
 #r "nuget: Fornax.Core, 0.15.1"
 #r "nuget: Markdig, 0.40.0"
+#load "../generators/types.fsx"
 
 open System.IO
+open Types
 open Markdig
-
-// Define Page type directly here instead of referencing Layout.Page
-type Page = {
-    title: string
-    link: string
-    content: string
-    file: string
-}
 
 let markdownPipeline =
     MarkdownPipelineBuilder()
         .UseAdvancedExtensions()
         .UseAutoIdentifiers()
         .UseAutoLinks()
-        .UseCitations()
         .UseCustomContainers()
         .UseDefinitionLists()
         .UseEmphasisExtras()
@@ -33,83 +26,87 @@ let markdownPipeline =
         .UsePragmaLines()
         .UseSmartyPants()
         .UseTaskLists()
-        .UseYamlFrontMatter()
         .Build()
 
-let getConfig (fileContent : string) =
-    let fileContent = fileContent.Split '\n'
-    let fileContent = fileContent |> Array.skip 1 // First line must be ---
-    let indexOfSeperator = fileContent |> Array.findIndex (fun s -> s.StartsWith "---")
-    let splitKey (line: string) =
-        let seperatorIndex = line.IndexOf(':')
-        if seperatorIndex > 0 then
-            let key = line.[.. seperatorIndex - 1].Trim().ToLower()
-            let value = line.[seperatorIndex + 1 ..].Trim()
-            Some(key, value)
+/// Extracts front matter from markdown content
+let extractFrontMatter (content: string) =
+    let lines = content.Split('\n')
+    if lines.Length > 2 && lines.[0].Trim() = "---" then
+        let separatorIndex = Array.findIndex (fun (line: string) -> line.Trim() = "---") lines.[1..]
+        if separatorIndex > 0 then
+            let frontMatter = lines.[1..separatorIndex]
+            let markdown = String.concat "\n" lines.[separatorIndex + 2..]
+            
+            // Parse front matter into key-value pairs
+            let parseFrontMatterLine (line: string) =
+                let colonIndex = line.IndexOf(':')
+                if colonIndex > 0 then
+                    let key = line.[..colonIndex - 1].Trim().ToLower()
+                    let value = line.[colonIndex + 1..].Trim().TrimStart('"').TrimEnd('"')
+                    Some (key, value)
+                else
+                    None
+                    
+            let frontMatterMap = 
+                frontMatter
+                |> Array.choose parseFrontMatterLine
+                |> Map.ofArray
+                
+            Some (frontMatterMap, markdown)
         else
             None
-    fileContent
-    |> Array.splitAt indexOfSeperator
-    |> fst
-    |> Seq.choose splitKey
-    |> Map.ofSeq
-
-let getContent (fileContent : string) =
-    let fileContent = fileContent.Split '\n'
-    let fileContent = fileContent |> Array.skip 1 // First line must be ---
-    let indexOfSeperator = fileContent |> Array.findIndex (fun s -> s.StartsWith "---")
-    fileContent 
-    |> Array.skip (indexOfSeperator + 1) 
-    |> String.concat "\n"
-    |> fun content -> Markdig.Markdown.ToHtml(content, markdownPipeline)
-
-let trimString (str : string) =
-    str.Trim().TrimEnd('"').TrimStart('"')
-
-let isValidPage (filePath: string) =
-    let ext = Path.GetExtension(filePath)
-    let dir = Path.GetDirectoryName(filePath)
-    ext = ".md" && 
-    not (dir.Contains("_public")) && 
-    not (Path.GetFileName(filePath).StartsWith("_")) &&
-    not (dir.Contains("posts")) // Exclude post files from pages
-
-let loadFile (rootDir: string) (n: string) =
-    try
-        let text = File.ReadAllText n
-        let config = getConfig text
-        let content = getContent text
-
-        let fileName = Path.GetFileNameWithoutExtension(n)
-        let title = 
-            config 
-            |> Map.tryFind "title" 
-            |> Option.map trimString 
-            |> Option.defaultValue (if fileName = "index" then "Home" else fileName)
-
-        let link = 
-            if fileName = "index" then "/"
-            else "/" + fileName + ".html"
-
-        let chopLength =
-            if rootDir.EndsWith(Path.DirectorySeparatorChar) then rootDir.Length
-            else rootDir.Length + 1
-
-        let file = Path.Combine(n |> Path.GetDirectoryName |> fun x -> x.[chopLength .. ], 
-                                fileName + ".md").Replace("\\", "/")
-
-        Some {
-            title = title
-            link = link
-            content = content
-            file = file
-        }
-    with ex ->
-        printfn "Error processing %s: %s" n ex.Message
+    else
         None
 
+/// Loads a single page from a file
+let loadPage (rootDir: string) (filePath: string) =
+    try
+        let text = File.ReadAllText filePath
+        
+        match extractFrontMatter text with
+        | Some (frontMatter, markdownContent) ->
+            let title = 
+                frontMatter 
+                |> Map.tryFind "title" 
+                |> Option.defaultValue (Path.GetFileNameWithoutExtension filePath)
+                
+            let fileName = Path.GetFileNameWithoutExtension filePath
+            let link = 
+                if fileName.ToLower() = "index" then "/"
+                else sprintf "/%s.html" fileName
+                
+            let htmlContent = Markdig.Markdown.ToHtml(markdownContent, markdownPipeline)
+            
+            // Calculate the relative path from the root directory
+            let chopLength =
+                if rootDir.EndsWith(Path.DirectorySeparatorChar) then rootDir.Length
+                else rootDir.Length + 1
+                
+            let dirPart = 
+                filePath
+                |> Path.GetDirectoryName
+                |> fun x -> x.[chopLength..] 
+                
+            let file = Path.Combine(dirPart, fileName + ".md").Replace("\\", "/")
+            
+            Some {
+                title = title
+                link = link
+                content = htmlContent
+                file = file
+            }
+        | None ->
+            printfn "Warning: No front matter found in %s" filePath
+            None
+    with ex ->
+        printfn "Error processing page %s: %s" filePath ex.Message
+        None
+
+/// The loader function called by Fornax
 let loader (projectRoot: string) (siteContent: SiteContents) =
-    // Always add standard pages
+    printfn "Loading pages..."
+    
+    // Standard pages that should always exist
     let standardPages = [
         { 
             title = "Home"
@@ -121,7 +118,7 @@ let loader (projectRoot: string) (siteContent: SiteContents) =
             title = "Posts"
             link = "/posts/index.html"
             content = ""
-            file = "posts.md"
+            file = "pages/posts.md"
         }
         { 
             title = "About"
@@ -137,28 +134,28 @@ let loader (projectRoot: string) (siteContent: SiteContents) =
         }
     ]
     
-    // Add standard pages to content
+    // Add standard pages as placeholders
     standardPages |> List.iter siteContent.Add
     
-    // Also load actual content from Markdown files
+    // Find and load actual page content
     let pagesPath = Path.Combine(projectRoot, "pages")
     
     if Directory.Exists(pagesPath) then
         try
             Directory.GetFiles(pagesPath, "*.md", SearchOption.AllDirectories)
             |> Array.filter (fun p -> not (Path.GetFileName(p).StartsWith("_")))
-            |> Array.choose (loadFile pagesPath)
+            |> Array.choose (loadPage projectRoot)
             |> Array.iter (fun page -> 
-                // Update the page content but keep the standard page entry
+                // Only add the page if it's not already in the standard pages
                 let existingPages = siteContent.TryGetValues<Page>() |> Option.defaultValue Seq.empty
-                let existing = existingPages |> Seq.tryFind (fun p -> p.title = page.title)
+                let existing = existingPages |> Seq.tryFind (fun p -> p.file = page.file)
                 
                 match existing with
                 | Some _ -> 
                     // Replace the existing page
                     siteContent.Remove<Page>() |> ignore
                     existingPages 
-                    |> Seq.filter (fun p -> p.title <> page.title)
+                    |> Seq.filter (fun p -> p.file <> page.file)
                     |> Seq.append [page]
                     |> Seq.iter siteContent.Add
                 | None -> 
@@ -167,5 +164,7 @@ let loader (projectRoot: string) (siteContent: SiteContents) =
             )
         with ex ->
             printfn "Error loading pages: %s" ex.Message
+    else
+        printfn "Warning: Pages directory not found at %s" pagesPath
 
     siteContent

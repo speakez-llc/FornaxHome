@@ -1,38 +1,13 @@
 #r "nuget: Fornax.Core, 0.15.1"
-#r "nuget: Markdig, 0.40.0"
 #load "layout.fsx"
+#load "types.fsx"
 
 open Html
 open System.IO
 open System.Text.RegularExpressions
-open Markdig
+open Types
 
-// Initialize Markdig pipeline
-let markdownPipeline =
-    MarkdownPipelineBuilder()
-        .UseAdvancedExtensions()
-        .UseAutoIdentifiers()
-        .UseAutoLinks()
-        .UseCitations()
-        .UseCustomContainers()
-        .UseDefinitionLists()
-        .UseEmphasisExtras()
-        .UseFigures()
-        .UseFooters()
-        .UseFootnotes()
-        .UseGenericAttributes()
-        .UseGridTables()
-        .UseListExtras()
-        .UseMathematics()
-        .UseMediaLinks()
-        .UsePipeTables()
-        .UsePragmaLines()
-        .UseSmartyPants()
-        .UseTaskLists()
-        .UseYamlFrontMatter()
-        .Build()
-
-// Process custom shortcodes in content
+/// Process shortcodes in the page content
 let processShortcodes (content: string) =
     // Contact form shortcode
     let contactFormPattern = "{{contact_form}}"
@@ -74,9 +49,9 @@ let processShortcodes (content: string) =
     let alertReplacer (m: Match) =
         let message = m.Groups.[1].Value
         sprintf """<div class="alert alert-info shadow-lg">
-    <div>
-        <span>%s</span>
-    </div>
+  <div>
+    <span>%s</span>
+  </div>
 </div>""" message
     
     // Apply replacements
@@ -85,56 +60,86 @@ let processShortcodes (content: string) =
     
     withAlerts
 
-let generate' (ctx : SiteContents) (page: string) =
-    let siteInfo = ctx.TryGetValue<Globalloader.SiteInfo> ()
-    let desc = siteInfo |> Option.map (fun si -> si.description) |> Option.defaultValue ""
-
+/// Generate a specific page
+let generate' (ctx: SiteContents) (page: string) =
     printfn "Generating page: %s" page
-    let filePath = page
-
-    let mutable finalHtml = "<p>Page content not found.</p>"
-    if File.Exists(filePath) then
-        let content = File.ReadAllText(filePath)
-        let startIndex = content.IndexOf("---") + 3
-        let endIndex = content.IndexOf("---", startIndex)
-        if endIndex > startIndex then
-            printfn "Found front matter. Extracting markdown content."
-            let markdownOnly = content.Substring(endIndex + 3)
-            let processed = processShortcodes markdownOnly
-            let body = Markdig.Markdown.ToHtml(processed, markdownPipeline)
-            finalHtml <- body
-
-    Layout.layout ctx page [
-        section [Class "hero bg-primary text-primary-content py-24"] [
-            div [Class "hero-content text-center"] [
-                div [Class "max-w-md"] [
-                    h1 [Class "text-4xl font-bold accent"] [!!desc]
+    
+    // Find the page in the site contents
+    let pageOption = 
+        ctx.TryGetValues<Page>() 
+        |> Option.defaultValue Seq.empty
+        |> Seq.tryFind (fun p -> p.file = page || p.file.EndsWith(page))
+        
+    match pageOption with
+    | Some pageData ->
+        // Get site info for the header
+        let siteInfo = ctx.TryGetValue<Globalloader.SiteInfo>()
+        let desc =
+            siteInfo
+            |> Option.map (fun si -> si.description)
+            |> Option.defaultValue ""
+        
+        // Process any shortcodes in the content
+        let processedContent = processShortcodes pageData.content
+        
+        // Use the layout to render the page
+        Layout.layout ctx pageData.title [
+            section [Class "hero bg-primary text-primary-content py-24"] [
+                div [Class "hero-content text-center"] [
+                    div [Class "max-w-md"] [
+                        h1 [Class "text-4xl font-bold accent"] [!!desc]
+                    ]
                 ]
             ]
-        ]
-        div [Class "container mx-auto px-4"] [
-            section [Class "py-8"] [
-                div [Class "max-w-3xl mx-auto"] [
-                    div [Class "card bg-base-100 shadow-xl"] [
-                        div [Class "card-body"] [
-                            !! finalHtml
+            div [Class "container mx-auto px-4"] [
+                section [Class "py-8"] [
+                    div [Class "max-w-3xl mx-auto"] [
+                        div [Class "card bg-base-100 shadow-xl"] [
+                            div [Class "card-body"] [
+                                div [Class "prose lg:prose-lg"] [
+                                    !! processedContent
+                                ]
+                            ]
                         ]
                     ]
                 ]
             ]
         ]
-    ]
+    | None ->
+        // Page not found
+        printfn "Warning: Page '%s' not found in site contents" page
+        Layout.layout ctx "Page Not Found" [
+            div [Class "container mx-auto px-4 py-8"] [
+                div [Class "card bg-warning text-warning-content max-w-md mx-auto"] [
+                    div [Class "card-body"] [
+                        h2 [Class "card-title"] [!!"Page Not Found"]
+                        p [] [!!(sprintf "The page '%s' could not be found." page)]
+                        a [Class "btn"; Href "/"] [!!"Return Home"]
+                    ]
+                ]
+            ]
+        ]
 
-let generate (ctx : SiteContents) (projectRoot: string) (page: string) =
+/// Main generator function called by Fornax
+let generate (ctx: SiteContents) (projectRoot: string) (page: string) =
+    printfn "Page generator called for: %s" page
     try
         let rendered = generate' ctx page
-        let fileName = Path.GetFileNameWithoutExtension(page)
-        let outputFileName = if fileName = "index" then "index.html" else fileName + ".html"
-        let outputPath = Path.Combine(projectRoot, "_public", outputFileName)
-        Directory.CreateDirectory(Path.GetDirectoryName(outputPath)) |> ignore
-        let html = Layout.render ctx rendered
-        File.WriteAllText(outputPath, html)
-        [outputPath]
+        Layout.render ctx rendered
     with ex ->
-        printfn "Error generating page %s: %s" page ex.Message
-        []
+        printfn "Error in page generator: %s" ex.Message
+        printfn "Stack trace: %s" ex.StackTrace
+        
+        // Fallback to a simple error page
+        let errorPage = Layout.layout ctx "Error" [
+            div [Class "container mx-auto px-4 py-8"] [
+                div [Class "card bg-error text-error-content max-w-md mx-auto"] [
+                    div [Class "card-body"] [
+                        h2 [Class "card-title"] [!!"Error Generating Page"]
+                        p [] [!!(sprintf "Error: %s" ex.Message)]
+                    ]
+                ]
+            ]
+        ]
+        
+        Layout.render ctx errorPage

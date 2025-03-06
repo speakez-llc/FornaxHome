@@ -3,8 +3,9 @@
 open Config
 open System.IO
 
+/// Predicate for identifying post files
 let postPredicate (projectRoot: string, page: string) =
-    let fileName = Path.Combine(projectRoot,page)
+    let fileName = Path.Combine(projectRoot, page)
     let ext = Path.GetExtension page
     if ext = ".md" then
         let ctn = File.ReadAllText fileName
@@ -13,29 +14,25 @@ let postPredicate (projectRoot: string, page: string) =
     else
         false
 
+/// Predicate for identifying page files
 let pagePredicate (projectRoot: string, page: string) =
     let fileName = Path.Combine(projectRoot, page)
     let ext = Path.GetExtension page
-    
-    // Be more specific about which pages to process
+    let dir = Path.GetDirectoryName page
     let isPage = 
         ext = ".md" &&
         not (page.Contains "_public") &&
-        not (postPredicate(projectRoot, page)) &&
-        (page.StartsWith("pages/") || page.StartsWith("pages\\")) &&
-        not (Path.GetFileName(page).StartsWith("_")) &&
-        // Exclude any paths containing HTML as those would be already processed
-        not (page.EndsWith(".html"))
-
+        dir.Contains("pages") &&
+        not (postPredicate(projectRoot, page))
+    
     isPage
 
+/// Predicate for identifying static files to copy
 let staticPredicate (projectRoot: string, page: string) =
     let ext = Path.GetExtension page
     let fileShouldBeExcluded =
         ext = ".fsx" ||
         ext = ".md"  ||
-        ext = ".html"  ||
-        page.EndsWith("tailwind.config.js") ||
         page.Contains "_public" ||
         page.Contains("/_public/") ||
         page.Contains "_bin" ||
@@ -48,15 +45,16 @@ let staticPredicate (projectRoot: string, page: string) =
         page.Contains ".ionide"
     fileShouldBeExcluded |> not
 
-
+/// Configuration for the site
 let config = {
     Generators = [
         {Script = "less.fsx"; Trigger = OnFileExt ".less"; OutputFile = ChangeExtension "css" }
         {Script = "sass.fsx"; Trigger = OnFileExt ".scss"; OutputFile = ChangeExtension "css" }
         {Script = "post.fsx"; Trigger = OnFilePredicate postPredicate; OutputFile = ChangeExtension "html" }
-        {Script = "page.fsx"; Trigger = OnFilePredicate pagePredicate; OutputFile = MultipleFiles id }
+        {Script = "page.fsx"; Trigger = OnFilePredicate pagePredicate; OutputFile = ChangeExtension "html" }
         {Script = "staticfile.fsx"; Trigger = OnFilePredicate staticPredicate; OutputFile = SameFileName }
         {Script = "posts.fsx"; Trigger = Once; OutputFile = MultipleFiles id }
+        {Script = "index.fsx"; Trigger = Once; OutputFile = NewFileName "index.html" }
         {Script = "tailwind.fsx"; Trigger = OnFileExt ".css"; OutputFile = SameFileName }
     ]
 }
