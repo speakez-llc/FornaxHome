@@ -7,17 +7,18 @@ open System.IO
 let generate' (ctx : SiteContents) (page: string) =
     printfn "Generating page: %s" page
     
-    // Get all pages
+    // Debug: print all available pages
     let pages = ctx.TryGetValues<Layout.Page>() |> Option.defaultValue Seq.empty
+    printfn "Available pages: %A" (pages |> Seq.map (fun p -> p.file) |> Seq.toArray)
     
-    // Try to find the page by exact path first, then by filename
-    let pageOption = 
-        pages |> Seq.tryFind (fun p -> 
-            p.file = page || 
-            Path.GetFileName(p.file) = Path.GetFileName(page))
+    // Use exact path matching
+    let pageOption = pages |> Seq.tryFind (fun p -> p.file = page)
     
     match pageOption with
+    // Rest remains the same
     | Some pageData ->
+        // Rest of the function remains the same
+        // ...
         // Found the page, generate it
         let siteInfo = ctx.TryGetValue<Globalloader.SiteInfo> ()
         let desc =

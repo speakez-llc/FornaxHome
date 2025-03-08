@@ -16,14 +16,12 @@ let postPredicate (projectRoot: string, page: string) =
 let pagePredicate (projectRoot: string, page: string) =
     let fileName = Path.Combine(projectRoot, page)
     let ext = Path.GetExtension page
-    let dir = Path.GetDirectoryName page
-    let isPage = 
-        ext = ".md" &&
-        not (page.Contains "_public") &&
-        dir.Contains("pages") &&
-        not (postPredicate(projectRoot, page))
-    
-    isPage
+    if ext = ".md" then
+        let ctn = File.ReadAllText fileName
+        page.Contains("_public") |> not
+        && ctn.Contains("layout: page")  // Check for page layout tag
+    else
+        false
 
 let staticPredicate (projectRoot: string, page: string) =
     let ext = Path.GetExtension page
