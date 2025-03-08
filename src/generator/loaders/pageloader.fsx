@@ -70,7 +70,9 @@ let isValidPage (filePath: string) =
     ext = ".md" && 
     not (dir.Contains("_public")) && 
     not (Path.GetFileName(filePath).StartsWith("_")) &&
-    not (dir.Contains("posts")) // Exclude post files from pages
+    not (dir.Contains("posts")) &&
+    not (filePath.Contains("\\_public\\")) && 
+    not (filePath.StartsWith("_public"))   
 
 let loadFile (rootDir: string) (n: string) =
     try

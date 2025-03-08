@@ -2,7 +2,6 @@
 #load "layout.fsx"
 
 open Html
-
 let generate' (ctx : SiteContents) (page: string) =
     let postOption =
         ctx.TryGetValues<Postloader.Post> ()
@@ -51,3 +50,4 @@ let generate (ctx : SiteContents) (projectRoot: string) (page: string) =
     // The fix: Call Layout.render with the generated content
     let content = generate' ctx page
     Layout.render ctx content
+    
