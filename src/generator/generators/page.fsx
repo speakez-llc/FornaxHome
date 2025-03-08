@@ -1,6 +1,6 @@
 #r "nuget: Fornax.Core, 0.15.1"
-#r "nuget: Markdig, 0.40.0"
-#load "layout.fsx"
+#load "layout.fsx" 
+
 
 open Html
 open System.IO
@@ -61,76 +61,74 @@ let processShortcodes (content: string) =
     withAlerts
 
 let generate' (ctx : SiteContents) (page: string) =
-    // Print debugging information
-    printfn "Generating page: %s" page
+    printfn "Trying to find page: %s" page
     
-    // Fix the file path - don't prepend "pages/" as it's already in the path
-    let filePath = page
-    let pageTitle = 
-        if page.EndsWith("index.md") then "Home"
-        elif page.EndsWith("about.md") then "About"
-        elif page.EndsWith("contact.md") then "Contact"
-        else Path.GetFileNameWithoutExtension(page) |> fun s -> s.[0].ToString().ToUpper() + s.[1..]
+    // Get all available pages for debugging
+    let allPages = 
+        ctx.TryGetValues<Page>() 
+        |> Option.defaultValue Seq.empty 
+        |> Seq.toList
     
-    printfn "Looking for file at path: %s" filePath
+    printfn "All available pages: %A" (allPages |> List.map (fun p -> p.file))
     
-    let pageContent = 
-        if File.Exists(filePath) then
-            try 
-                printfn "Found file: %s" filePath
-                let content = File.ReadAllText(filePath)
-                printfn "Content length: %d" content.Length
-                
-                let startIndex = content.IndexOf("---") + 3
-                let endIndex = content.IndexOf("---", startIndex)
-                if endIndex > startIndex then
-                    printfn "Found front matter. Extracting markdown content."
-                    let markdownContent = content.Substring(endIndex + 3)
-                    printfn "Markdown content length: %d" markdownContent.Length
-                    
-                    // Process the markdown content 
-                    let html = Markdown.ToHtml(markdownContent, markdownPipeline)
-                    printfn "Generated HTML length: %d" html.Length
-                    
-                    // Process shortcodes after markdown rendering
-                    processShortcodes html
-                else
-                    "<p>Error processing page content: Could not find front matter.</p>"
-            with ex ->
-                printfn "Error reading file %s: %s" filePath ex.Message
-                "<p>Error reading page content.</p>"
-        else
-            printfn "File not found: %s" filePath
-            "<p>Page content not found.</p>"
+    // Try to find the page by comparing just the filename part
+    let pageOption = 
+        allPages 
+        |> Seq.tryFind (fun p -> 
+            // Compare just the filename without path or with path considered
+            let pageFile = Path.GetFileName(page)
+            let pFile = Path.GetFileName(p.file)
+            printfn "Comparing page %s with loaded page %s" pageFile pFile
+            pFile = pageFile || p.file = page
+        )
     
-    // Use Layout.layout which now includes the navigation bar
-    Layout.layout ctx pageTitle [
-        section [Class "hero bg-primary text-primary-content py-24"] [
-            div [Class "hero-content text-center"] [
-                div [Class "max-w-md"] [
-                    let siteInfo = ctx.TryGetValue<Globalloader.SiteInfo> ()
-                    let desc =
-                        siteInfo
-                        |> Option.map (fun si -> si.description)
-                        |> Option.defaultValue ""
-                    h1 [Class "text-4xl font-bold accent"] [!!desc]
+    match pageOption with
+    | Some pageData ->
+        // Process any shortcodes in the content
+        let processedContent = processShortcodes pageData.content
+        
+        // Use Layout.layout which includes the navigation bar
+        Layout.layout ctx pageData.title [
+            section [Class "hero bg-primary text-primary-content py-24"] [
+                div [Class "hero-content text-center"] [
+                    div [Class "max-w-md"] [
+                        let siteInfo = ctx.TryGetValue<Globalloader.SiteInfo> ()
+                        let desc =
+                            siteInfo
+                            |> Option.map (fun si -> si.description)
+                            |> Option.defaultValue ""
+                        h1 [Class "text-4xl font-bold accent"] [!!desc]
+                    ]
                 ]
             ]
-        ]
-        div [Class "container mx-auto px-4"] [
-            section [Class "py-8"] [
-                div [Class "max-w-3xl mx-auto"] [
-                    div [Class "card bg-base-100 shadow-xl"] [
-                        div [Class "card-body"] [
-                            div [Class "prose prose-lg prose-headings:font-bold prose-h1:text-2xl prose-h2:text-xl prose-a:text-blue-600 prose-ul:list-disc prose-ul:ml-4 !max-w-none"] [
-                                !!pageContent
+            div [Class "container mx-auto px-4"] [
+                section [Class "py-8"] [
+                    div [Class "max-w-3xl mx-auto"] [
+                        div [Class "card bg-base-100 shadow-xl"] [
+                            div [Class "card-body"] [
+                                div [Class "prose prose-lg prose-headings:font-bold prose-h1:text-2xl prose-h2:text-xl prose-a:text-blue-600 prose-ul:list-disc prose-ul:ml-4 !max-w-none"] [
+                                    !!processedContent
+                                ]
                             ]
                         ]
                     ]
                 ]
             ]
         ]
-    ]
+    | None ->
+        // Page not found
+        printfn "Warning: Page '%s' not found in loaded content" page
+        Layout.layout ctx "Page Not Found" [
+            div [Class "container mx-auto px-4 py-8"] [
+                div [Class "card bg-warning text-warning-content max-w-md mx-auto"] [
+                    div [Class "card-body"] [
+                        h2 [Class "card-title"] [!!"Page Not Found"]
+                        p [] [!!(sprintf "The page '%s' could not be found." page)]
+                        a [Class "btn"; Href "/"] [!!"Return Home"]
+                    ]
+                ]
+            ]
+        ]
 
 let generate (ctx : SiteContents) (projectRoot: string) (page: string) =
     printfn "Page generator called for: %s (projectRoot: %s)" page projectRoot

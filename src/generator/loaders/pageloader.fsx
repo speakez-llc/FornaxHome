@@ -110,9 +110,7 @@ let loadFile (rootDir: string) (n: string) =
 
 let loader (projectRoot: string) (siteContent: SiteContents) =
     printfn "Loading pages from: %s" projectRoot
-    
-    // Remove existing pages
-    siteContent.Remove<Page>() |> ignore
+
     
     // Load pages from files
     let pagesPath = Path.Combine(projectRoot, "pages")
