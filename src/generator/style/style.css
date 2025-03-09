@@ -1,28 +1,29 @@
-/* Tailwind base - must be first */
 @tailwind base;
-
-/* Tailwind components */
 @tailwind components;
-
-/* Tailwind utilities - must be before custom CSS */
 @tailwind utilities;
 
-/* Custom variables */
 :root {
   --transition-duration: 0.4s;
   --transition-timing-function: ease-in-out;
 }
 
-/* Global styles */
 html {
   transition: background-color var(--transition-duration) var(--transition-timing-function),
   color var(--transition-duration) var(--transition-timing-function);
 }
 
-/* Custom styling that works with DaisyUI */
 html, body {
-  font-family: 'Varela Round', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   font-size: 16px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Varela Round', sans-serif;
+}
+
+.prose {
+  font-family: 'Montserrat', sans-serif;
+  max-width: 100%;
 }
 
 /* Hero section styling */

@@ -11,18 +11,13 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi nisi diam, vehicu
 <!--more-->
 
 ```fsharp
-open System
-
 let config = {
     Generators = [
-        {Script = "less.fsx"; Trigger = OnFileExt ".less"; OutputFile = ChangeExtension "css" }
-        {Script = "sass.fsx"; Trigger = OnFileExt ".scss"; OutputFile = ChangeExtension "css" }
         {Script = "post.fsx"; Trigger = OnFilePredicate postPredicate; OutputFile = ChangeExtension "html" }
+        {Script = "page.fsx"; Trigger = OnFilePredicate pagePredicate; OutputFile = Custom pageOutput }
         {Script = "staticfile.fsx"; Trigger = OnFilePredicate staticPredicate; OutputFile = SameFileName }
-        {Script = "index.fsx"; Trigger = Once; OutputFile = MultipleFiles id }
-        {Script = "about.fsx"; Trigger = Once; OutputFile = NewFileName "about.html" }
-        {Script = "contact.fsx"; Trigger = Once; OutputFile = NewFileName "contact.html" }
-        {Script = "tailwind.fsx"; Trigger = OnFileExt ".css"; OutputFile = SameFileName }
+        {Script = "posts.fsx"; Trigger = Once; OutputFile = MultipleFiles id }
+        {Script = "tailwind.fsx"; Trigger = OnFilePredicate tailwindPredicate; OutputFile = SameFileName }
     ]
 }
 ```

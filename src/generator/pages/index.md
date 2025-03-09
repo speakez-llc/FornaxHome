@@ -3,7 +3,7 @@ layout: page
 title: Home
 ---
 
-# Welcome to SpeakEZ Yolo
+# Welcome to SpeakEZ Static Site Builder
 
 SpeakEZ provides intelligent systems designed for privacy, reliability, speed, and improving your bottom line.
 
@@ -15,3 +15,5 @@ SpeakEZ provides intelligent systems designed for privacy, reliability, speed, a
 - Business intelligence tools
 
 [View our Blog](/posts/index.html)
+
+<button class="btn btn-accent">Accent Color Button</button>

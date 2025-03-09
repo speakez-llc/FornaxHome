@@ -25,25 +25,6 @@ let injectWebsocketCode (webpage:string) =
       }
       window.addEventListener("load", init, false);
       </script>
-      <script>
-        document.addEventListener('DOMContentLoaded', function() {
-          // Theme handling
-          const themeController = document.querySelector('.theme-controller');
-          if (themeController) {
-            // Set initial theme based on localStorage or default to business
-            const savedTheme = localStorage.getItem('theme') || 'business';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            themeController.checked = savedTheme === 'corporate';
-            
-            // Add event listener for theme changes
-            themeController.addEventListener('change', function() {
-              const newTheme = this.checked ? 'corporate' : 'business';
-              document.documentElement.setAttribute('data-theme', newTheme);
-              localStorage.setItem('theme', newTheme);
-            });
-          }
-        });
-        </script>
         """
     let head = "<head>"
     let index = webpage.IndexOf head
