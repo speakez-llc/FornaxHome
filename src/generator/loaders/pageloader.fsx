@@ -98,8 +98,6 @@ let loadFile (rootDir: string) (n: string) =
 
         let file = n.Substring(chopLength).Replace("\\", "/")
 
-        printfn "Loaded page: %s (file: %s, link: %s)" title file link
-
         Some {
             title = title
             link = link
@@ -111,8 +109,6 @@ let loadFile (rootDir: string) (n: string) =
         None
 
 let loader (projectRoot: string) (siteContent: SiteContents) =
-    printfn "Loading pages from: %s" projectRoot
-
     
     // Load pages from files
     let pagesPath = Path.Combine(projectRoot, "pages")
@@ -133,5 +129,4 @@ let loader (projectRoot: string) (siteContent: SiteContents) =
     if List.isEmpty loadedPages then
         failwithf "CRITICAL ERROR: No pages found in %s. Site generation cannot continue." pagesPath
     
-    printfn "Loaded %d pages" (List.length loadedPages)
     siteContent

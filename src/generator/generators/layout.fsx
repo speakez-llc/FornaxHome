@@ -131,8 +131,6 @@ let layout (ctx : SiteContents) active bodyCnt =
             meta [Name "viewport"; Content "width=device-width, initial-scale=1"]
             title [] [!! ttl]
             link [Rel "icon"; Type "image/ico"; Sizes "32x32"; Href "/images/favicon.ico"]
-            link [Rel "stylesheet"; Href "https://cdn.jsdelivr.net/npm/tailwindcss@2.2/dist/tailwind.min.css"]
-            link [Rel "stylesheet"; Href "https://cdn.jsdelivr.net/npm/daisyui@3.7.4/dist/full.css"]
             link [Rel "stylesheet"; Href "https://fonts.googleapis.com/css?family=Varela+Round"]
             link [Rel "stylesheet"; Href "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css"]
             script [Src "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"] []

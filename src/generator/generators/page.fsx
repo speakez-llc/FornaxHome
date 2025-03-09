@@ -61,15 +61,12 @@ let processShortcodes (content: string) =
     withAlerts
 
 let generate' (ctx : SiteContents) (page: string) =
-    printfn "Trying to find page: %s" page
     
     // Get all available pages for debugging
     let allPages = 
         ctx.TryGetValues<Page>() 
         |> Option.defaultValue Seq.empty 
         |> Seq.toList
-    
-    printfn "All available pages: %A" (allPages |> List.map (fun p -> p.file))
     
     // Try to find the page by comparing just the filename part
     let pageOption = 
@@ -78,7 +75,6 @@ let generate' (ctx : SiteContents) (page: string) =
             // Compare just the filename without path or with path considered
             let pageFile = Path.GetFileName(page)
             let pFile = Path.GetFileName(p.file)
-            printfn "Comparing page %s with loaded page %s" pageFile pFile
             pFile = pageFile || p.file = page
         )
     
@@ -131,7 +127,6 @@ let generate' (ctx : SiteContents) (page: string) =
         ]
 
 let generate (ctx : SiteContents) (projectRoot: string) (page: string) =
-    printfn "Page generator called for: %s (projectRoot: %s)" page projectRoot
     try
         let rendered = generate' ctx page
         Layout.render ctx rendered
