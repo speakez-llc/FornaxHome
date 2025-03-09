@@ -1,26 +1,26 @@
 {
-  "name": "generator",
+  "name": "fornax-tailwind-site",
   "version": "1.0.0",
-  "type": "module",
-  "main": "tailwind.config.js",
+  "description": "Static site with Fornax, Tailwind CSS, and DaisyUI",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4.0.12",
-    "@tailwindcss/typography": "^0.5.16",
-    "autoprefixer": "^10.4.20",
-    "cssnano": "^7.0.6",
-    "daisyui": "^5.0.0",
-    "postcss": "^8.5.3",
-    "tailwindcss": "^3.4.17"
+    "build:css": "postcss style/style.css -o _public/style/style.css",
+    "watch:css": "postcss style/style.css -o _public/style/style.css --watch"
   },
   "dependencies": {
-    "npx": "^10.2.2",
-    "typography": "^0.16.24"
+    "tailwindcss": "3.3.5",
+    "daisyui": "5.0.0",
+    "@tailwindcss/typography": "0.5.10",
+    "postcss": "8.4.31",
+    "autoprefixer": "10.4.16"
   },
-  "description": ""
+  "devDependencies": {
+    "tailwindcss-markdown": "1.0.0",
+    "tailwind-highlightjs": "2.0.1",
+    "siren-dsl": "0.3.2",
+    "@mermaid-js/mermaid-cli": "11.4.2",
+    "@tailwindcss/container-queries": "0.1.1",
+    "cssnano": "6.0.1",
+    "postcss-cli": "10.1.0"
+  }
 }

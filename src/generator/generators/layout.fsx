@@ -71,7 +71,7 @@ let createNavBar (active: string) =
             div [Class "navbar-center hidden lg:flex items-center"] [
                 ul [Class "menu menu-horizontal px-1"] menuEntries
                 label [Class "swap swap-rotate ml-4"] [
-                    input [Type "checkbox"; Class "theme-controller"; HtmlProperties.Custom ("data-toggle-theme", "business,corporate")]
+                    input [Type "checkbox"; Class "theme-controller"; HtmlProperties.Custom ("data-toggle-theme", "dark,light")]
                     i [Class "swap-on fa-solid fa-moon text-xl"] []
                     i [Class "swap-off fa-solid fa-sun text-xl"] []
                 ]
@@ -85,7 +85,7 @@ let createNavBar (active: string) =
                         yield! menuEntries
                         li [] [
                             label [Class "swap swap-rotate justify-center"] [
-                                input [Type "checkbox"; Class "theme-controller"; HtmlProperties.Custom ("data-toggle-theme", "business,corporate")]
+                                input [Type "checkbox"; Class "theme-controller"; HtmlProperties.Custom ("data-toggle-theme", "business,custom")]
                                 i [Class "swap-on fa-solid fa-moon text-xl"] []
                                 i [Class "swap-off fa-solid fa-sun text-xl"] []
                             ]
@@ -106,19 +106,14 @@ let layout (ctx : SiteContents) active bodyCnt =
 
     let navBar = createNavBar active
 
-    html [] [
+    html [HtmlProperties.Custom ("data-theme", "dark")] [
         head [] [
             meta [CharSet "utf-8"]
             meta [Name "viewport"; Content "width=device-width, initial-scale=1"]
             title [] [!! ttl]
             link [Rel "icon"; Type "image/ico"; Sizes "32x32"; Href "/images/favicon.ico"]
             link [Rel "stylesheet"; Href "https://fonts.googleapis.com/css?family=Varela+Round"]
-            link [Rel "stylesheet"; Href "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css"]
-            script [Src "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"] []
-            script [Src "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/fsharp.min.js"] []
             script [Src "https://cdnjs.cloudflare.com/ajax/libs/mermaid/9.1.3/mermaid.min.js"] [] 
-            script [] [!! "document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());"]
-            link [Rel "stylesheet"; Href "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/stackoverflow-dark.min.css"] 
             link [Rel "stylesheet"; Type "text/css"; Href "/style/style.css"]
             script [Src "https://kit.fontawesome.com/3e50397676.js"; CrossOrigin "anonymous"] []
         ]
