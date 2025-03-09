@@ -1,17 +1,23 @@
+/* Tailwind base - must be first */
 @tailwind base;
+
+/* Tailwind components */
 @tailwind components;
+
+/* Tailwind utilities - must be before custom CSS */
 @tailwind utilities;
 
+/* Custom variables */
 :root {
   --transition-duration: 0.4s;
   --transition-timing-function: ease-in-out;
 }
 
+/* Global styles */
 html {
   transition: background-color var(--transition-duration) var(--transition-timing-function),
   color var(--transition-duration) var(--transition-timing-function);
 }
-
 
 /* Custom styling that works with DaisyUI */
 html, body {
@@ -19,6 +25,7 @@ html, body {
   font-size: 16px;
 }
 
+/* Hero section styling */
 .hero {
   background-image: url('/images/slider.jpg');
   background-position: top;
@@ -35,14 +42,13 @@ html, body {
   padding: 2rem;
 }
 
+/* Card styling */
 .card {
   margin-top: -150px;
 }
 
+/* Responsive fixes */
 @media screen and (max-width: 768px) {
-  .card {
-
-  }
   .content {
     max-width: 100%;
     line-height: 1.6;
@@ -55,6 +61,7 @@ html, body {
   line-height: 2;
 }
 
+/* Content styles */
 .prose img {
   border-radius: 0.5rem;
 }
@@ -79,5 +86,3 @@ html, body {
   line-height: 1.6;
   width: 100%;
 }
-
-

@@ -1,5 +1,9 @@
-export default {
-    content: ["./_public/**/*.html"],
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+    content: [
+      "./_public/**/*.html",
+      "./style/**/*.css"
+    ],
     theme: {
       extend: {
         colors: {
@@ -54,8 +58,8 @@ export default {
       },
     },
     plugins: [
-      require("daisyui"),
-      require("@tailwindcss/typography")
+      require("@tailwindcss/typography"),
+      require("daisyui")
     ],
     daisyui: {
       themes: [
