@@ -110,6 +110,11 @@ html, body {
   width: 100%;
 }
 
+/* Add to your CSS */
+.prose h1:first-child {
+  display: none;
+}
+
 /* Hide the first heading in post content to avoid duplication with card title */
 .hide-first-heading > h1:first-child,
 .hide-first-heading > h2:first-child {
@@ -129,7 +134,6 @@ html, body {
 code[class*="language-"],
 pre[class*="language-"] {
 	color: #fff;
-	text-shadow: 0 1px 1px #000;
 	font-family: "JetBrains Mono", monospace;
 	direction: ltr;
 	text-align: left;
@@ -151,8 +155,9 @@ pre[class*="language-"] {
 }
 
 pre[class*="language-"] code {
-	float: left;
-	padding: 0 15px 0 0;
+  float: left;
+  padding: 0 15px 0 0;
+  color: var(--tw-prose-pre-code, hsl(var(--nc)));
 }
 
 pre[class*="language-"],
@@ -190,13 +195,13 @@ pre[class*="language-"] {
 .token.prolog,
 .token.doctype,
 .token.cdata {
-	color: #797979;
+	color: #0F0;
 }
 
 .token.selector,
 .token.operator,
 .token.punctuation {
-	color: #fff;
+  color: var(--tw-prose-pre-code);
 }
 
 .token.namespace {

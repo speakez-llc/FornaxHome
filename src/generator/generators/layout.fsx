@@ -79,7 +79,7 @@ let createNavBar (active: string) (ctx : SiteContents)  =
                     img [Src "/images/SpeakEZ_standard.png"; Alt "Logo"; Class "h-8 mr-2"]
                 ]
             ]
-            div [Class "navbar-center hidden lg:flex"] [
+            div [Class "lg:navbar-center hidden lg:flex"] [
                 ul [Class "menu menu-horizontal"] menuEntries
             ]
             div [Class "navbar-end hidden lg:flex"] [
@@ -89,7 +89,7 @@ let createNavBar (active: string) (ctx : SiteContents)  =
                     i [Class "swap-off fa-solid fa-sun text-xl"] []
                 ]
             ]
-            div [Class "navbar-end lg:hidden items-right"] [
+            div [Class "navbar-end lg:hidden justify-end flex"] [
                 div [Class "dropdown dropdown-end"] [
                     label [TabIndex 0; Class "btn btn-ghost"] [
                         i [Class "fa-solid fa-bars text-xl"] []
@@ -97,7 +97,7 @@ let createNavBar (active: string) (ctx : SiteContents)  =
                     ul [TabIndex 0; Class "dropdown-content menu menu-vertical mt-3 p-2 shadow bg-base-100 rounded-box w-52"] [
                         yield! menuEntries
                         li [] [
-                            div [Class "flex items-center"] [
+                            div [Class "flex items-right"] [
                                 label [Class "swap swap-rotate"] [
                                     input [Type "checkbox"; Class "theme-controller"; Value lightTheme]
                                     i [Class "swap-on fa-solid fa-moon text-xl"] []

@@ -11,11 +11,11 @@ SpeakEZ Technologies was founded with a mission to create intelligent systems th
 
 Our team consists of experts in:
 
-- Artificial Intelligence
-- Machine Learning
-- Privacy Engineering
-- Software Development
-- Data Analysis
+- Complex System Design with Decision Support
+- Machine Learning & Model Training
+- Data Analysis with Advanced Analytics
+- High Performance Software Development
+- Commercial & Industrial Applications
 
 ## Our Mission
 

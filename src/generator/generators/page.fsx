@@ -6,44 +6,41 @@ open Html
 open System.IO
 open System.Text.RegularExpressions
 
-
 // Process custom shortcodes in content
 let processShortcodes (content: string) =
     // Contact form shortcode
     let contactFormPattern = "{{contact_form}}"
-    let contactFormHtml = """
-<div class="card bg-base-100 shadow-xl">
-  <div class="card-body">
-    <form action="/api/contact" method="post">
-      <div class="form-control w-full">
-        <label class="label">
-          <span class="label-text">Name</span>
-        </label>
-        <input type="text" name="name" class="input input-bordered w-full" required />
-      </div>
-      
-      <div class="form-control w-full mt-4">
-        <label class="label">
-          <span class="label-text">Email</span>
-        </label>
-        <input type="email" name="email" class="input input-bordered w-full" required />
-      </div>
-      
-      <div class="form-control w-full mt-4">
-        <label class="label">
-          <span class="label-text">Message</span>
-        </label>
-        <textarea name="message" class="textarea textarea-bordered h-24" required></textarea>
-      </div>
-      
-      <div class="form-control mt-6">
-        <button type="submit" class="btn btn-primary w-full">Send Message</button>
-      </div>
-    </form>
-  </div>
-</div>
-"""
-
+    
+    // Generate contact form using the HTML DSL instead of a string - WITHOUT the card structure
+    let generateContactForm () =
+        form [Action "/api/contact"; Method "post"] [
+            div [Class "form-control w-full"] [
+                label [Class "label"] [
+                    span [Class "label-text"] [!!"Name"]
+                ]
+                input [Type "text"; Name "name"; Class "input input-bordered w-full"; Required true]
+            ]
+            
+            div [Class "form-control w-full mt-4"] [
+                label [Class "label"] [
+                    span [Class "label-text"] [!!"Email"]
+                ]
+                input [Type "email"; Name "email"; Class "input input-bordered w-full"; Required true]
+            ]
+            
+            div [Class "form-control w-full mt-4"] [
+                label [Class "label"] [
+                    span [Class "label-text"] [!!"Message"]
+                ]
+                textarea [Name "message"; Class "textarea textarea-bordered h-24"; Required true] []
+            ]
+            
+            div [Class "form-control mt-6"] [
+                button [Type "submit"; Class "btn btn-primary"] [!!"Send Message"]
+            ]
+        ]
+        |> HtmlElement.ToString
+    
     // Alert shortcode
     let alertPattern = "{{alert (.*?)}}"
     let alertReplacer (m: Match) =
@@ -55,7 +52,7 @@ let processShortcodes (content: string) =
 </div>""" message
     
     // Apply replacements
-    let withContactForm = Regex.Replace(content, contactFormPattern, contactFormHtml)
+    let withContactForm = Regex.Replace(content, contactFormPattern, generateContactForm())
     let withAlerts = Regex.Replace(withContactForm, alertPattern, alertReplacer)
     
     withAlerts
