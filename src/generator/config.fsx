@@ -29,7 +29,7 @@ let staticPredicate (projectRoot: string, page: string) =
     let ext = Path.GetExtension page
     
     // First, explicitly exclude all CSS files in node_modules
-    if ext = ".css" && normalizedPage.Contains("node_modules") then
+    if ext = ".css" || ext = ".html" && normalizedPage.Contains("node_modules") then
         false
     else
         let fileShouldBeExcluded =

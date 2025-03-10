@@ -1,8 +1,7 @@
-/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
     "./_public/**/*.html",
-    "./style/**/*.css"
+    "./style/**/*.css",
   ],
   theme: {
     extend: {
@@ -96,22 +95,11 @@ module.exports = {
     require("@tailwindcss/typography"),
     require("tailwind-highlightjs"),
     require("@tailwindcss/container-queries"),
-    require("@downwindcss/text-decoration"),
   ],
   daisyui: {
     themes: [
       "business",
       "corporate",
-      {
-        "business-custom": {
-          ...require("daisyui/theme")["business"],
-          accent: "#ED5B00",
-        },
-        "corporate-custom": {
-          ...require("daisyui/theme")["corporate"],
-          accent: "#ED5B00",
-        }
-      }
     ],
     darkTheme: "business",
     base: true,

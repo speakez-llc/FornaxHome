@@ -71,7 +71,7 @@ let createNavBar (active: string) =
             div [Class "navbar-center hidden lg:flex items-center"] [
                 ul [Class "menu menu-horizontal px-1"] menuEntries
                 label [Class "swap swap-rotate ml-4"] [
-                    input [Type "checkbox"; Class "theme-controller"; HtmlProperties.Custom ("data-toggle-theme", "dark,light")]
+                    input [Type "checkbox"; Class "theme-controller"; HtmlProperties.Custom ("data-toggle-theme", "business-custom,corporate-custom")]
                     i [Class "swap-on fa-solid fa-moon text-xl"] []
                     i [Class "swap-off fa-solid fa-sun text-xl"] []
                 ]
@@ -85,7 +85,7 @@ let createNavBar (active: string) =
                         yield! menuEntries
                         li [] [
                             label [Class "swap swap-rotate justify-center"] [
-                                input [Type "checkbox"; Class "theme-controller"; HtmlProperties.Custom ("data-toggle-theme", "business,custom")]
+                                input [Type "checkbox"; Class "theme-controller"; HtmlProperties.Custom ("data-toggle-theme", "business-custom,corporate-custom")]
                                 i [Class "swap-on fa-solid fa-moon text-xl"] []
                                 i [Class "swap-off fa-solid fa-sun text-xl"] []
                             ]
@@ -106,7 +106,7 @@ let layout (ctx : SiteContents) active bodyCnt =
 
     let navBar = createNavBar active
 
-    html [HtmlProperties.Custom ("data-theme", "dark")] [
+    html [HtmlProperties.Custom ("data-theme", "business-custom")] [
         head [] [
             meta [CharSet "utf-8"]
             meta [Name "viewport"; Content "width=device-width, initial-scale=1"]
@@ -116,6 +116,8 @@ let layout (ctx : SiteContents) active bodyCnt =
             script [Src "https://cdnjs.cloudflare.com/ajax/libs/mermaid/9.1.3/mermaid.min.js"] [] 
             link [Rel "stylesheet"; Type "text/css"; Href "/style/style.css"]
             script [Src "https://kit.fontawesome.com/3e50397676.js"; CrossOrigin "anonymous"] []
+            script [Src "https://cdn.jsdelivr.net/npm/theme-change@2.0.2/index.js"] []
+            script [] [!! "window.onload = () => { themeChange(false) }"]
         ]
         body [] [
             navBar

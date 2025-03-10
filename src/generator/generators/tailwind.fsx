@@ -1,28 +1,37 @@
 #r "nuget: Fornax.Core, 0.15.1"
 
+open System
 open System.IO
 open System.Diagnostics
-open System
 
 let generate (ctx : SiteContents) (projectRoot: string) (page: string) =
     let generatorDir = projectRoot
-    let baseStylePath = Path.Combine(generatorDir, page)
+    let outputPath = Path.Combine(generatorDir, "_public", Path.GetDirectoryName(page), Path.GetFileName(page))
+    
+    // Make sure output directory exists
+    Directory.CreateDirectory(Path.GetDirectoryName(outputPath)) |> ignore
     
     try
-        // Create process to run PostCSS and capture its output
-        let psi = new ProcessStartInfo("cmd", $"/c npx postcss {baseStylePath}")
+        // Create process to run PostCSS with more explicit parameters
+        let args = sprintf "-c postcss.config.js -i %s -o %s" page outputPath
+        let psi = new ProcessStartInfo()
+        psi.FileName <- "cmd"
+        psi.Arguments <- sprintf "/c postcss -c postcss.config.js %s -o %s" page outputPath
         psi.WorkingDirectory <- generatorDir
         psi.UseShellExecute <- false
         psi.RedirectStandardOutput <- true
         psi.RedirectStandardError <- true
         psi.CreateNoWindow <- true
         
+        // Log the command being executed
+        printfn "Executing: npx postcss %s" args
+        
         // Start the process
         use proc = Process.Start(psi)
         
         // Capture output for content and logging
         use stdOutReader = proc.StandardOutput
-        let cssContent = stdOutReader.ReadToEnd()
+        let cssOutput = stdOutReader.ReadToEnd()
         
         use stdErrReader = proc.StandardError
         let stdErr = stdErrReader.ReadToEnd()
@@ -35,11 +44,19 @@ let generate (ctx : SiteContents) (projectRoot: string) (page: string) =
             // Return empty CSS in case of error
             ""
         else
-            printfn "CSS generated successfully (%d bytes)" cssContent.Length
+            printfn "CSS generated successfully to %s" outputPath
             
-            // Return the CSS content for Fornax to write
-            cssContent
+            if not(String.IsNullOrEmpty(cssOutput)) then
+                printfn "PostCSS generated output (first 100 chars): %s" (cssOutput.Substring(0, min 100 cssOutput.Length))
+            
+            // Read the file we just created
+            if File.Exists(outputPath) then
+                File.ReadAllText(outputPath)
+            else
+                printfn "Warning: Output file not found at %s" outputPath
+                ""
     with e ->
         printfn "Error generating CSS: %s" e.Message
+        printfn "Stack trace: %s" e.StackTrace
         // Return empty CSS in case of error
         ""
