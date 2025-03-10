@@ -3,6 +3,9 @@ module.exports = {
     "./_public/**/*.html",
     "./style/**/*.css",
   ],
+  safelist: [{
+    pattern: /hljs+/,
+  }],
   theme: {
     extend: {
       colors: {
@@ -46,7 +49,10 @@ module.exports = {
         }
       },
       hljs: {
-        theme: 'ir-black',
+        theme: 'an-old-hope',
+        cssVar: true,
+        extend: {
+        }
       },
       typography: {
         DEFAULT: {
@@ -98,10 +104,10 @@ module.exports = {
   ],
   daisyui: {
     themes: [
-      "business",
-      "corporate",
+      "light",
+      "dark",
     ],
-    darkTheme: "business",
+    darkTheme: "dark",
     base: true,
     styled: true,
     utils: true,

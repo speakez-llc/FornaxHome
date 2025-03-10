@@ -61,22 +61,24 @@ let createNavBar (active: string) =
             let cls = if p.title = active then "active" else ""
             li [] [a [Class cls; Href p.link] [!! p.title]])
 
-    nav [Class "navbar"] [
+    nav [Class "navbar sticky top-0 z-10 bg-base-100"] [ 
         div [Class "container flex justify-between mx-auto items-center w-full"] [
-            div [Class "navbar-start"] [
+            div [Class "navbar-start item-left"] [
                 a [Class "btn btn-ghost text-xl"; Href "/"] [
                     img [Src "/images/SpeakEZ_standard.png"; Alt "Logo"; Class "h-8 mr-2"]
                 ]
             ]
             div [Class "navbar-center hidden lg:flex items-center"] [
-                ul [Class "menu menu-horizontal px-1"] menuEntries
+                ul [Class "menu menu-horizontal"] menuEntries
+            ]
+            div [Class "navbar-end hidden lg:flex items-center"] [
                 label [Class "swap swap-rotate ml-4"] [
-                    input [Type "checkbox"; Class "theme-controller"; HtmlProperties.Custom ("data-toggle-theme", "business-custom,corporate-custom")]
+                    input [Type "checkbox"; Class "theme-controller"; Value "light"]
                     i [Class "swap-on fa-solid fa-moon text-xl"] []
                     i [Class "swap-off fa-solid fa-sun text-xl"] []
                 ]
             ]
-            div [Class "navbar-end lg:hidden"] [
+            div [Class "navbar-end lg:hidden items-right"] [
                 div [Class "dropdown dropdown-end"] [
                     label [TabIndex 0; Class "btn btn-ghost"] [
                         i [Class "fa-solid fa-bars text-xl"] []
@@ -85,7 +87,7 @@ let createNavBar (active: string) =
                         yield! menuEntries
                         li [] [
                             label [Class "swap swap-rotate justify-center"] [
-                                input [Type "checkbox"; Class "theme-controller"; HtmlProperties.Custom ("data-toggle-theme", "business-custom,corporate-custom")]
+                                input [Type "checkbox"; Class "theme-controller"; Value "light"]
                                 i [Class "swap-on fa-solid fa-moon text-xl"] []
                                 i [Class "swap-off fa-solid fa-sun text-xl"] []
                             ]
@@ -113,10 +115,13 @@ let layout (ctx : SiteContents) active bodyCnt =
             title [] [!! ttl]
             link [Rel "icon"; Type "image/ico"; Sizes "32x32"; Href "/images/favicon.ico"]
             link [Rel "stylesheet"; Href "https://fonts.googleapis.com/css?family=Varela+Round"]
-            script [Src "https://cdnjs.cloudflare.com/ajax/libs/mermaid/9.1.3/mermaid.min.js"] [] 
+            link [Rel "stylesheet"; Href "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/styles/default.min.css"]
+            script [Src "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/highlight.min.js"] []
+            script [Src "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/fsharp.min.js"] []
+            script [] [!! "document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());"]
+            script [Src "https://cdnjs.cloudflare.com/ajax/libs/mermaid/9.1.3/mermaid.min.js"] []
             link [Rel "stylesheet"; Type "text/css"; Href "/style/style.css"]
             script [Src "https://kit.fontawesome.com/3e50397676.js"; CrossOrigin "anonymous"] []
-            script [Src "https://cdn.jsdelivr.net/npm/theme-change@2.0.2/index.js"] []
             script [] [!! "window.onload = () => { themeChange(false) }"]
         ]
         body [] [
