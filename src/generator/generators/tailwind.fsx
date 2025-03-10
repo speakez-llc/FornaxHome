@@ -4,6 +4,8 @@ open System
 open System.IO
 open System.Diagnostics
 
+// The key parts to modify in tailwind.fsx:
+
 let generate (ctx : SiteContents) (projectRoot: string) (page: string) =
     let generatorDir = projectRoot
     let outputPath = Path.Combine(generatorDir, "_public", Path.GetDirectoryName(page), Path.GetFileName(page))
@@ -12,24 +14,22 @@ let generate (ctx : SiteContents) (projectRoot: string) (page: string) =
     Directory.CreateDirectory(Path.GetDirectoryName(outputPath)) |> ignore
     
     try
-        // Create process to run PostCSS with more explicit parameters
-        let args = sprintf "-c postcss.config.js -i %s -o %s" page outputPath
+        // Use the simplest approach with postcss-cli
         let psi = new ProcessStartInfo()
         psi.FileName <- "cmd"
-        psi.Arguments <- sprintf "/c postcss -c postcss.config.js %s -o %s" page outputPath
+        psi.Arguments <- sprintf "/c postcss %s -o %s" page outputPath
         psi.WorkingDirectory <- generatorDir
         psi.UseShellExecute <- false
         psi.RedirectStandardOutput <- true
         psi.RedirectStandardError <- true
-        psi.CreateNoWindow <- true
         
         // Log the command being executed
-        printfn "Executing: npx postcss %s" args
+        printfn "Executing: postcss %s -o %s" page outputPath
         
         // Start the process
         use proc = Process.Start(psi)
         
-        // Capture output for content and logging
+        // Capture and log output
         use stdOutReader = proc.StandardOutput
         let cssOutput = stdOutReader.ReadToEnd()
         
@@ -37,18 +37,11 @@ let generate (ctx : SiteContents) (projectRoot: string) (page: string) =
         let stdErr = stdErrReader.ReadToEnd()
         proc.WaitForExit()
         
-        // Check process result
         if proc.ExitCode <> 0 then
             printfn "PostCSS process failed with exit code %d" proc.ExitCode
             printfn "Error output: %s" stdErr
-            // Return empty CSS in case of error
             ""
         else
-            printfn "CSS generated successfully to %s" outputPath
-            
-            if not(String.IsNullOrEmpty(cssOutput)) then
-                printfn "PostCSS generated output (first 100 chars): %s" (cssOutput.Substring(0, min 100 cssOutput.Length))
-            
             // Read the file we just created
             if File.Exists(outputPath) then
                 File.ReadAllText(outputPath)
@@ -56,7 +49,5 @@ let generate (ctx : SiteContents) (projectRoot: string) (page: string) =
                 printfn "Warning: Output file not found at %s" outputPath
                 ""
     with e ->
-        printfn "Error generating CSS: %s" e.Message
-        printfn "Stack trace: %s" e.StackTrace
-        // Return empty CSS in case of error
+        printfn "Error: %s" e.Message
         ""

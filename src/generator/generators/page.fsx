@@ -93,7 +93,7 @@ let generate' (ctx : SiteContents) (page: string) =
                             siteInfo
                             |> Option.map (fun si -> si.description)
                             |> Option.defaultValue ""
-                        h1 [Class "text-4xl font-bold accent"] [!!desc]
+                        h1 [Class "text-4xl font-bold text-white"] [!!desc]
                     ]
                 ]
             ]

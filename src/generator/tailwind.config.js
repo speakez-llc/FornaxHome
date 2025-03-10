@@ -1,16 +1,16 @@
-module.exports = {
+import daisyui from "daisyui"
+
+const ACCENT_COLOR = '#ED5B00';
+
+export default {
   content: [
     "./_public/**/*.html",
     "./style/**/*.css",
   ],
-  safelist: [{
-    pattern: /hljs+/,
-  }],
   theme: {
     extend: {
       colors: {
-        'accent-light': '#d2be68',
-        'accent': '#ED5B00',
+        'accent': ACCENT_COLOR
       },
       animation: {
         'fadeIn': 'fadeIn 500ms ease-in-out',
@@ -45,11 +45,21 @@ module.exports = {
           '50%': {
             outline: '3px solid theme("colors.accent-light")',
             outlineOffset: '2px'
+          },
+          shadowRoll: {
+              '0%, 100%': { boxShadow: '1px -1px 10px' },
+              '12.5%': { boxShadow: '1px 1px 10px' },
+              '25%': { boxShadow: '-1px 1px 10px' },
+              '37.5%': { boxShadow: '-1px -1px 10px' },
+              '50%': { boxShadow: '1px -1px 10px' },
+              '62.5%': { boxShadow: '1px 1px 10px' },
+              '75%': { boxShadow: '-1px 1px 10px' },
+              '87.5%': { boxShadow: '-1px -1px 10px' }
           }
         }
       },
       hljs: {
-        theme: 'an-old-hope',
+        theme: 'pojoaque',
         cssVar: true,
         extend: {
         }
@@ -104,10 +114,39 @@ module.exports = {
   ],
   daisyui: {
     themes: [
-      "light",
       "dark",
+      "cupcake",
+      "bumblebee",
+      "emerald",
+      "corporate",
+      "synthwave",
+      "retro",
+      "cyberpunk",
+      "valentine",
+      "halloween",
+      "garden",
+      "forest",
+      "aqua",
+      "lofi",
+      "pastel",
+      "fantasy",
+      "wireframe",
+      "black",
+      "luxury",
+      "dracula",
+      "cmyk",
+      "autumn",
+      "acid",
+      "lemonade",
+      "night",
+      "coffee",
+      "winter",
+      "dim",
+      "nord",
+      "sunset",
+      "business",
+      "corporate"
     ],
-    darkTheme: "dark",
     base: true,
     styled: true,
     utils: true,
@@ -115,6 +154,14 @@ module.exports = {
     logs: true,
     themeRoot: ":root",
   },
-  // Enable dark mode
-  darkMode: 'class',
+  daisyui: {
+    themes: true, // false: only light + dark | true: all themes | array: specific themes like this ["light", "dark", "cupcake"]
+    darkTheme: "dark", // name of one of the included themes for dark mode
+    base: true, // applies background color and foreground color for root element by default
+    styled: true, // include daisyUI colors and design decisions for all components
+    utils: true, // adds responsive and modifier utility classes
+    prefix: "", // prefix for daisyUI classnames (components, modifiers and responsive class names. Not colors)
+    logs: true, // Shows info about daisyUI version and used config in the console when building your CSS
+    themeRoot: ":root", // The element that receives theme color CSS variables
+  },
 }

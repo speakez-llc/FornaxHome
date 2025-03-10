@@ -34,13 +34,12 @@ let generate' (ctx : SiteContents) (_: string) =
       let previousPage =
           if i = 0 then "#"
           else "/" + getFilenameForIndex (i - 1)
-  
-      // Use the Layout.layout function which now includes the navigation bar
+
       Layout.layout ctx "Posts" [
           section [Class "hero bg-primary text-primary-content py-24"] [
               div [Class "hero-content text-center"] [
                   div [Class "max-w-md"] [
-                      h1 [Class "text-4xl font-bold accent"] [!!desc]
+                      h2 [Class "text-4xl font-bold accent"] [!!desc]
                   ]
               ]
           ]

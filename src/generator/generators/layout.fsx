@@ -79,7 +79,7 @@ let createNavBar (active: string) =
             ]
             div [Class "navbar-end hidden lg:flex"] [
                 label [Class "swap swap-rotate ml-4"] [
-                    input [Type "checkbox"; Class "theme-controller"; Value "light"]
+                    input [Type "checkbox"; Class "theme-controller"; Value "nord"]
                     i [Class "swap-on fa-solid fa-moon text-xl"] []
                     i [Class "swap-off fa-solid fa-sun text-xl"] []
                 ]
@@ -94,7 +94,7 @@ let createNavBar (active: string) =
                         li [] [
                             div [Class "flex items-center"] [
                                 label [Class "swap swap-rotate"] [
-                                    input [Type "checkbox"; Class "theme-controller"; Value "light"]
+                                    input [Type "checkbox"; Class "theme-controller"; Value "nord"]
                                     i [Class "swap-on fa-solid fa-moon text-xl"] []
                                     i [Class "swap-off fa-solid fa-sun text-xl"] []
                                 ]
@@ -110,28 +110,67 @@ let createNavBar (active: string) =
 // Core layout function that all generators should use
 let layout (ctx : SiteContents) active bodyCnt =
     let siteInfo = ctx.TryGetValue<Globalloader.SiteInfo> ()
-    let ttl =
+    let ttl, darkTheme, lightTheme =
       siteInfo
-      |> Option.map (fun si -> si.title)
-      |> Option.defaultValue ""
+      |> Option.map (fun si -> si.title, si.darkTheme, si.lightTheme)
+      |> Option.defaultValue ("", "synthwave", "nord")
 
     let navBar = createNavBar active
 
-    html [HtmlProperties.Custom ("data-theme", "business-custom")] [
+    html [HtmlProperties.Custom ("data-theme", "synthwave")] [ // Use corporate as the default theme
         head [] [
             meta [CharSet "utf-8"]
             meta [Name "viewport"; Content "width=device-width, initial-scale=1"]
             title [] [!! ttl]
             link [Rel "icon"; Type "image/ico"; Sizes "32x32"; Href "/images/favicon.ico"]
             link [Rel "stylesheet"; Href "https://fonts.googleapis.com/css?family=Varela+Round"]
-            link [Rel "stylesheet"; Href "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/styles/default.min.css"]
-            script [Src "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/highlight.min.js"] []
+            //link [Rel "stylesheet"; Href "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/styles/default.min.css"]
+            //script [Src "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/highlight.min.js"] []
             script [Src "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/fsharp.min.js"] []
             script [] [!! "document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());"]
             script [Src "https://cdnjs.cloudflare.com/ajax/libs/mermaid/9.1.3/mermaid.min.js"] []
             link [Rel "stylesheet"; Type "text/css"; Href "/style/style.css"]
             script [Src "https://kit.fontawesome.com/3e50397676.js"; CrossOrigin "anonymous"] []
-            script [] [!! "window.onload = () => { themeChange(false) }"]
+            script [] [!! (sprintf """
+                // Theme initialization script with themes from siteInfo
+                (function() {
+                    // Theme configuration from F# SiteInfo
+                    const darkTheme = '%s';
+                    const lightTheme = '%s';
+                    
+                    // Get theme from localStorage or default to dark theme
+                    const savedTheme = localStorage.getItem('theme') || darkTheme;
+                    
+                    // Apply theme to html element
+                    document.documentElement.setAttribute('data-theme', savedTheme);
+                    
+                    // Initialize theme toggles once DOM is loaded
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const themeToggles = document.querySelectorAll('.theme-controller');
+                        
+                        // Update checkbox state based on current theme (checked = light theme)
+                        themeToggles.forEach(toggle => {
+                            toggle.checked = (savedTheme === lightTheme);
+                        });
+                        
+                        // Add event listeners to all theme toggles
+                        themeToggles.forEach(toggle => {
+                            toggle.addEventListener('change', function() {
+                                const newTheme = this.checked ? lightTheme : darkTheme;
+                                document.documentElement.setAttribute('data-theme', newTheme);
+                                localStorage.setItem('theme', newTheme);
+                                
+                                // Sync all other toggles
+                                themeToggles.forEach(otherToggle => {
+                                    if (otherToggle !== this) {
+                                        otherToggle.checked = this.checked;
+                                    }
+                                });
+                            });
+                        });
+                    });
+                })();
+            """ darkTheme lightTheme)]
         ]
         body [] [
             navBar
@@ -161,7 +200,11 @@ let postLayout (useSummary: bool) (post: Postloader.Post) =
                 ]
             ]
             div [Class "mt-4 prose lg:prose-lg"] [
-                !! (if useSummary then post.summary else post.content)
+                // Use a CSS solution to hide the first h1/h2 in the content
+                if useSummary then
+                    !! post.summary
+                else
+                    div [Class "hide-first-heading"] [!! post.content]
             ]
         ]
     ]

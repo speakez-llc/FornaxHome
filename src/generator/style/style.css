@@ -12,6 +12,26 @@ html {
               color var(--transition-duration) var(--transition-timing-function);
 }
 
+
+/* Add some fallback styling for theme toggle elements */
+.swap-rotate .swap-on {
+  transform: rotate(0deg);
+  opacity: 0;
+}
+
+.swap-rotate .swap-off {
+  opacity: 1;
+}
+
+.swap-rotate input:checked ~ .swap-on {
+  opacity: 1;
+}
+
+.swap-rotate input:checked ~ .swap-off {
+  opacity: 0;
+}
+
+
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Varela Round', sans-serif;
 }
@@ -88,31 +108,10 @@ html, body {
   width: 100%;
 }
 
-.prose :where(pre):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
-  color: var(--tw-prose-pre-code);
-  background-color: transparent;
-  overflow-x: auto;
-  font-weight: 400;
-  font-size: 0.875em;
-  line-height: 1.7142857;
-  margin-top: 1.7142857em;
-  margin-bottom: 1.7142857em;
-  border-radius: 0.375rem;
-  padding-top: 0.8571429em;
-  padding-inline-end: 1.1428571em;
-  padding-bottom: 0.8571429em;
-  padding-inline-start: 1.1428571em;
-  padding: 1.25em 1.5em;
-  border: 1px solid var(--tw-prose-pre-border);
-} 
 
-.prose :where(pre code):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
-  border-width: 0;
-  border-radius: 6px;
-  padding: 0;
-  font-weight: inherit;
-  color: inherit;
-  font-size: inherit;
-  font-family: inherit;
-  line-height: inherit;
+
+/* Hide the first heading in post content to avoid duplication with card title */
+.hide-first-heading > h1:first-child,
+.hide-first-heading > h2:first-child {
+  display: none;
 }
