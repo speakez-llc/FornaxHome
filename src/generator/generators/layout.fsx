@@ -55,7 +55,12 @@ let getStandardNavigation () =
     ]
 
 // Creates a consistent navigation bar for all pages
-let createNavBar (active: string) =
+let createNavBar (active: string) (ctx : SiteContents)  =
+    let siteInfo = ctx.TryGetValue<Globalloader.SiteInfo> ()
+    let ttl, darkTheme, lightTheme =
+      siteInfo
+      |> Option.map (fun si -> si.title, si.darkTheme, si.lightTheme)
+      |> Option.defaultValue ("", "dark", "light")
     let menuEntries =
         getStandardNavigation()
         |> List.map (fun p ->
@@ -79,7 +84,7 @@ let createNavBar (active: string) =
             ]
             div [Class "navbar-end hidden lg:flex"] [
                 label [Class "swap swap-rotate ml-4"] [
-                    input [Type "checkbox"; Class "theme-controller"; Value "nord"]
+                    input [Type "checkbox"; Class "theme-controller"; Value lightTheme]
                     i [Class "swap-on fa-solid fa-moon text-xl"] []
                     i [Class "swap-off fa-solid fa-sun text-xl"] []
                 ]
@@ -94,7 +99,7 @@ let createNavBar (active: string) =
                         li [] [
                             div [Class "flex items-center"] [
                                 label [Class "swap swap-rotate"] [
-                                    input [Type "checkbox"; Class "theme-controller"; Value "nord"]
+                                    input [Type "checkbox"; Class "theme-controller"; Value lightTheme]
                                     i [Class "swap-on fa-solid fa-moon text-xl"] []
                                     i [Class "swap-off fa-solid fa-sun text-xl"] []
                                 ]
@@ -108,27 +113,34 @@ let createNavBar (active: string) =
     ]
 
 // Core layout function that all generators should use
+// Core layout function that all generators should use
 let layout (ctx : SiteContents) active bodyCnt =
     let siteInfo = ctx.TryGetValue<Globalloader.SiteInfo> ()
     let ttl, darkTheme, lightTheme =
       siteInfo
       |> Option.map (fun si -> si.title, si.darkTheme, si.lightTheme)
-      |> Option.defaultValue ("", "synthwave", "nord")
+      |> Option.defaultValue ("", "dark", "light")
 
-    let navBar = createNavBar active
+    // Pass the ctx argument to createNavBar
+    let navBar = createNavBar active ctx
 
-    html [HtmlProperties.Custom ("data-theme", "synthwave")] [ // Use corporate as the default theme
+    html [HtmlProperties.Custom ("data-theme", darkTheme)] [ // Use corporate as the default theme
         head [] [
             meta [CharSet "utf-8"]
             meta [Name "viewport"; Content "width=device-width, initial-scale=1"]
             title [] [!! ttl]
             link [Rel "icon"; Type "image/ico"; Sizes "32x32"; Href "/images/favicon.ico"]
             link [Rel "stylesheet"; Href "https://fonts.googleapis.com/css?family=Varela+Round"]
-            //link [Rel "stylesheet"; Href "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/styles/default.min.css"]
-            //script [Src "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/highlight.min.js"] []
-            script [Src "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/fsharp.min.js"] []
-            script [] [!! "document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());"]
+            script [Src "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"] []
+            script [Src "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"] []
+            script [Src "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-css.min.js"] []
+            script [Src "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markup.min.js"] []
+            script [Src "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-fsharp.min.js"] []
+            script [Src "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-csharp.min.js"] []
+            script [Src "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-powershell.min.js"] []
+            script [Src "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-bash.min.js"] []            
             script [Src "https://cdnjs.cloudflare.com/ajax/libs/mermaid/9.1.3/mermaid.min.js"] []
+            script [] [!! "document.addEventListener('DOMContentLoaded', function() { Prism.highlightAll(); });"]
             link [Rel "stylesheet"; Type "text/css"; Href "/style/style.css"]
             script [Src "https://kit.fontawesome.com/3e50397676.js"; CrossOrigin "anonymous"] []
             script [] [!! (sprintf """
@@ -139,10 +151,16 @@ let layout (ctx : SiteContents) active bodyCnt =
                     const lightTheme = '%s';
                     
                     // Get theme from localStorage or default to dark theme
-                    const savedTheme = localStorage.getItem('theme') || darkTheme;
+                    let savedTheme = localStorage.getItem('theme') || darkTheme;
                     
-                    // Apply theme to html element
-                    document.documentElement.setAttribute('data-theme', savedTheme);
+                    // Function to apply theme
+                    function applyTheme(theme) {
+                        document.documentElement.setAttribute('data-theme', theme);
+                        localStorage.setItem('theme', theme);
+                    }
+                    
+                    // Apply saved theme
+                    applyTheme(savedTheme);
                     
                     // Initialize theme toggles once DOM is loaded
                     document.addEventListener('DOMContentLoaded', function() {
@@ -152,13 +170,12 @@ let layout (ctx : SiteContents) active bodyCnt =
                         themeToggles.forEach(toggle => {
                             toggle.checked = (savedTheme === lightTheme);
                         });
-                        
+
                         // Add event listeners to all theme toggles
                         themeToggles.forEach(toggle => {
                             toggle.addEventListener('change', function() {
                                 const newTheme = this.checked ? lightTheme : darkTheme;
-                                document.documentElement.setAttribute('data-theme', newTheme);
-                                localStorage.setItem('theme', newTheme);
+                                applyTheme(newTheme);
                                 
                                 // Sync all other toggles
                                 themeToggles.forEach(otherToggle => {

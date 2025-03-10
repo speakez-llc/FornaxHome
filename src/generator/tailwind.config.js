@@ -1,6 +1,5 @@
 import daisyui from "daisyui"
 
-const ACCENT_COLOR = '#ED5B00';
 
 export default {
   content: [
@@ -9,12 +8,9 @@ export default {
   ],
   theme: {
     extend: {
-      colors: {
-        'accent': ACCENT_COLOR
-      },
       animation: {
-        'fadeIn': 'fadeIn 500ms ease-in-out',
-        'fadeOut': 'fadeOut 500ms ease-in-out',
+        'fadeIn': 'fadeIn 250ms ease-in-out',
+        'fadeOut': 'fadeOut 250ms ease-in-out',
         'pulse-ring': 'pulse-ring 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'pulse-button': 'pulse-button 1s cubic-bezier(0.4, 0, 0.6, 1) infinite'
       },
@@ -56,12 +52,6 @@ export default {
               '75%': { boxShadow: '-1px 1px 10px' },
               '87.5%': { boxShadow: '-1px -1px 10px' }
           }
-        }
-      },
-      hljs: {
-        theme: 'pojoaque',
-        cssVar: true,
-        extend: {
         }
       },
       typography: {
@@ -109,54 +99,10 @@ export default {
     require("daisyui"),
     require("tailwindcss-markdown"),
     require("@tailwindcss/typography"),
-    require("tailwind-highlightjs"),
     require("@tailwindcss/container-queries"),
   ],
   daisyui: {
-    themes: [
-      "dark",
-      "cupcake",
-      "bumblebee",
-      "emerald",
-      "corporate",
-      "synthwave",
-      "retro",
-      "cyberpunk",
-      "valentine",
-      "halloween",
-      "garden",
-      "forest",
-      "aqua",
-      "lofi",
-      "pastel",
-      "fantasy",
-      "wireframe",
-      "black",
-      "luxury",
-      "dracula",
-      "cmyk",
-      "autumn",
-      "acid",
-      "lemonade",
-      "night",
-      "coffee",
-      "winter",
-      "dim",
-      "nord",
-      "sunset",
-      "business",
-      "corporate"
-    ],
-    base: true,
-    styled: true,
-    utils: true,
-    prefix: "",
-    logs: true,
-    themeRoot: ":root",
-  },
-  daisyui: {
     themes: true, // false: only light + dark | true: all themes | array: specific themes like this ["light", "dark", "cupcake"]
-    darkTheme: "dark", // name of one of the included themes for dark mode
     base: true, // applies background color and foreground color for root element by default
     styled: true, // include daisyUI colors and design decisions for all components
     utils: true, // adds responsive and modifier utility classes

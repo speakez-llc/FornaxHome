@@ -20,7 +20,7 @@ let generate' (ctx : SiteContents) (page: string) =
             section [Class "hero bg-primary text-primary-content py-24"] [
                 div [Class "hero-content text-center"] [
                     div [Class "max-w-md"] [
-                        h1 [Class "text-4xl font-bold accent"] [!!desc]
+                        h1 [Class "text-4xl font-bold text-white"] [!!desc]
                     ]
                 ]
             ]
