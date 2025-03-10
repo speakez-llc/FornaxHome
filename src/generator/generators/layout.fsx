@@ -41,16 +41,17 @@ type Page = {
 type NavItem = {
     title: string
     link: string
+    icon: string
 }
 
 // CENTRAL DEFINITION OF NAVIGATION
 // This is the single source of truth for standard navigation across all pages
 let getStandardNavigation () =
     [
-        { NavItem.title = "Home"; link = "/" }
-        { NavItem.title = "Posts"; link = "/posts/index.html" }
-        { NavItem.title = "About"; link = "/about.html" }
-        { NavItem.title = "Contact"; link = "/contact.html" }
+        { NavItem.title = "Home"; link = "/"; icon = "fa-solid fa-home text-xl"  }
+        { NavItem.title = "Posts"; link = "/posts/index.html"; icon = "fa-solid fa-newspaper text-xl"  }
+        { NavItem.title = "About"; link = "/about.html"; icon = "fa-solid fa-user text-xl" }
+        { NavItem.title = "Contact"; link = "/contact.html"; icon = "fa-solid fa-envelope text-xl" }
     ]
 
 // Creates a consistent navigation bar for all pages
@@ -59,7 +60,12 @@ let createNavBar (active: string) =
         getStandardNavigation()
         |> List.map (fun p ->
             let cls = if p.title = active then "active" else ""
-            li [] [a [Class cls; Href p.link] [!! p.title]])
+            li [] [
+                a [Class cls; Href p.link] [
+                    i [Class (p.icon + " mr-2")] [] 
+                    !! p.title
+                ]
+            ])
 
     nav [Class "navbar sticky top-0 z-10 bg-base-100"] [ 
         div [Class "container flex justify-between mx-auto items-center w-full"] [
@@ -68,10 +74,10 @@ let createNavBar (active: string) =
                     img [Src "/images/SpeakEZ_standard.png"; Alt "Logo"; Class "h-8 mr-2"]
                 ]
             ]
-            div [Class "navbar-center hidden lg:flex items-center"] [
+            div [Class "navbar-center hidden lg:flex"] [
                 ul [Class "menu menu-horizontal"] menuEntries
             ]
-            div [Class "navbar-end hidden lg:flex items-center"] [
+            div [Class "navbar-end hidden lg:flex"] [
                 label [Class "swap swap-rotate ml-4"] [
                     input [Type "checkbox"; Class "theme-controller"; Value "light"]
                     i [Class "swap-on fa-solid fa-moon text-xl"] []
@@ -86,10 +92,13 @@ let createNavBar (active: string) =
                     ul [TabIndex 0; Class "dropdown-content menu menu-vertical mt-3 p-2 shadow bg-base-100 rounded-box w-52"] [
                         yield! menuEntries
                         li [] [
-                            label [Class "swap swap-rotate justify-center"] [
-                                input [Type "checkbox"; Class "theme-controller"; Value "light"]
-                                i [Class "swap-on fa-solid fa-moon text-xl"] []
-                                i [Class "swap-off fa-solid fa-sun text-xl"] []
+                            div [Class "flex items-center"] [
+                                label [Class "swap swap-rotate"] [
+                                    input [Type "checkbox"; Class "theme-controller"; Value "light"]
+                                    i [Class "swap-on fa-solid fa-moon text-xl"] []
+                                    i [Class "swap-off fa-solid fa-sun text-xl"] []
+                                ]
+                                span [Class "ml-2 flex-grow"] [!! "Theme"]
                             ]
                         ]
                     ]
