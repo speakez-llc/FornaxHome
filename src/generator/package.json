@@ -1,7 +1,7 @@
 {
-  "name": "fornax-tailwind-site",
+  "name": "flightdeck-tailwind-site",
   "version": "1.0.0",
-  "description": "Static site with Fornax, Tailwind CSS, and DaisyUI",
+  "description": "Static using FlightDeck, TailwindCSS, DaisyUI, PrismJS and HTMX",
   "private": true,
   "scripts": {
     "build:css": "postcss style/style.css -o _public/style/style.css -c postcss.config.js",

@@ -83,7 +83,7 @@ let createNavBar (active: string) (ctx : SiteContents)  =
                 ul [Class "menu menu-horizontal"] menuEntries
             ]
             div [Class "navbar-end hidden lg:flex"] [
-                label [Class "swap swap-rotate ml-4"] [
+                label [Class "swap swap-rotate mr-4"] [
                     input [Type "checkbox"; Class "theme-controller"; Value lightTheme]
                     i [Class "swap-on fa-solid fa-moon text-xl"] []
                     i [Class "swap-off fa-solid fa-sun text-xl"] []
