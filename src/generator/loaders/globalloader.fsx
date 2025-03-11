@@ -11,10 +11,10 @@ type SiteInfo = {
 let loader (projectRoot: string) (siteContent: SiteContents) =
     let siteInfo =
         { title = "SpeakEZ Technologies Home Page";
-          description = "Intelligent Systems Designed for Privacy, Reliability, Speed and <br>The Bottom Line";
+          description = "Intelligent Systems Designed for Reliability, Privacy, Performance & The Bottom Line";
           postPageSize = 5;
-          lightTheme = "light";
-          darkTheme = "coffee" }
+          lightTheme = "wireframe";
+          darkTheme = "forest" }
     siteContent.Add(siteInfo)
 
     siteContent

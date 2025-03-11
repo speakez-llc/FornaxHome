@@ -57,39 +57,60 @@ let find_Closest_TimeUnit =
 The following diagram illustrates how content flows through our static site generation process:
 
 ```mermaid
-flowchart TD
-    A[Content Creation] --> M[Markdown files]
-    A[Content Creation] --> S[CSS Base File]
-    A[Content Creation] --> P[Components]
-    M --> B(FlightDeck Processing)
-    P --> B(FlightDeck Processing)
-    S --> B(FlightDeck Processing)
-    B --> C{File Type}
-    C -->|Markdown| D[Generate HTML]
-    C -->|CSS| E[Tailwind DaisyUI PrismJS]
+
+%%{
+  init: {
+    'themeVariables': {
+      'lineColor': '#BBB',
+      'clusterLabelColor': '#666',  
+      'clusterBkg': 'transparent',
+      'clusterBorder': '#ff9900'
+    }
+  }
+}%%
+
+flowchart
+    A[Content Creation] ---> M[Markdown files]
+    A[Content Creation] ---> S[CSS Base & Config Files]
+    A[Content Creation] ---> P[Components & Shortcodes]
+    M ---> B(Any Saved File)
+    P ---> B
+    S ---> B
+    B --> C{FlightDeck<br>Processing}
+    C -->|Markdown| D[Generate HTML &<br>Component Post-processing]
+    C -->|CSS| E[Assemble Tailwind<br>DaisyUI & PrismJS]
     C -->|Static Assets| F[Copy to Output]
-    D --> G[Apply Layout & Output]
-    E --> G
-    F --> H[Final Website]
-    G --> H
+    D ---> G[Apply Layout & Output]
+    E ---> G
+    F ---> H[Suave Server Restart]
+    G ---> H
     
+    subgraph "  "
+    A
+    M
+    S
+    P
+    end
+
     subgraph " "
-    B
     C
     D
     E
     F
     G
     end
-    
-    style C fill:#005,stroke:#F80,stroke-width:2px,rx:10,ry:10,padding:10px,color:#EEE;
-    style P fill:#A9F,stroke:#DDD,stroke-width:2px,rx:10,ry:10,padding:10px;
-    style M fill:#9AF,stroke:#DDD,stroke-width:2px,rx:10,ry:10,padding:10px;
-    style S fill:#458,stroke:#FFF,stroke-width:2px,rx:10,ry:10,padding:10px,color:#EEE;
+
     style A fill:#06F,stroke:#FFF,stroke-width:2px,rx:10,ry:10,padding:10px,color:#EEE;
-    style H fill:#065,stroke:#DDD,stroke-width:2px,rx:10,ry:10,padding:10px,color:#EEE;
-    style F fill:#F80,stroke:#333,stroke-width:2px,rx:10,ry:10,padding:10px;
-    style G fill:#FA9,stroke:#333,stroke-width:2px,rx:10,ry:10,padding:10px;
+    style B fill:#994d00,stroke-width:0px,padding:10px,color:#FFF;
+    style C fill:#005,stroke:#F80,stroke-width:2px,rx:10,ry:10,padding:10px,color:#EEE;
+    style D fill:#002db3,stroke:#ff9900,stroke-width:2px,rx:10,ry:10,padding:10px,color:#EEE;
+    style E fill:#002db3,stroke:#ff9900,stroke-width:2px,rx:10,ry:10,padding:10px,color:#EEE;
+    style F fill:#b3cccc,stroke:#53c653,stroke-width:2px,rx:10,ry:10,padding:10px;
+    style G fill:#b3cccc,stroke:#53c653,stroke-width:2px,rx:10,ry:10,padding:10px;
+    style H fill:#206020,stroke:#DDD,stroke-width:2px,rx:10,ry:10,padding:10px,color:#EEE;
+    style M fill:#9AF,stroke:#DDD,stroke-width:2px,rx:10,ry:10,padding:10px;
+    style P fill:#A9F,stroke:#DDD,stroke-width:2px,rx:10,ry:10,padding:10px;
+    style S fill:#458,stroke:#FFF,stroke-width:2px,rx:10,ry:10,padding:10px,color:#EEE;
 ```
 
 This automated process ensures consistency and allows for easy customization through the configuration files.

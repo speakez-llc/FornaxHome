@@ -14,6 +14,10 @@ html {
               color var(--transition-duration) var(--transition-timing-function);
 }
 
+pre[class*="language-"] {
+  transition: background-color var(--transition-duration) var(--transition-timing-function);
+}
+
 
 /* Add some fallback styling for theme toggle elements */
 .swap-rotate .swap-on {
@@ -122,6 +126,14 @@ html, body {
 .mermaid {
   display: flex;
   justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* If the SVG inside needs centering as well */
+.mermaid svg {
+  max-width: 100%;
+  height: auto;
 }
 
 /*
@@ -136,7 +148,6 @@ html, body {
 /* =====   ===== */
 code[class*="language-"],
 pre[class*="language-"] {
-	color: #fff;
 	font-family: "JetBrains Mono", monospace;
 	direction: ltr;
 	text-align: left;
