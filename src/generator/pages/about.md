@@ -33,16 +33,22 @@ At SpeakEZ, we take a holistic approach to system design:
 ## Code excerpt
 
 ```fsharp
-let staticPredicate (projectRoot: string, page: string) =
-    let ext = Path.GetExtension page
-    let fileShouldBeExcluded =
-        ext = ".fsx" ||
-        ext = ".md"  ||
-        ext = ".html"  ||
-        page.EndsWith("tailwind.config.js") ||  // exclude Tailwind config
-        page.Contains "_public" ||
-        ...
-    not fileShouldBeExcluded
+open CoordinateSharp
+
+let find_Closest_TimeUnit =
+    let el = EagerLoad(EagerLoadType.Celestial)
+    el.Extensions <- EagerLoad_Extensions(EagerLoad_ExtensionsType.Solar_Cycle)
+    fun addTimeFn rangeStart rangeEnd (c : Coordinate) azimuth adjustNegatively ->
+        let start = if adjustNegatively then -rangeEnd else rangeStart
+        [start..rangeEnd]
+        |> List.map (fun x -> 
+            let newTime = addTimeFn (float x)
+            let nc = Coordinate(c.Latitude.ToDouble(), c.Longitude.ToDouble(), newTime, el)
+            nc.Offset <- c.Offset
+            (Math.Abs(nc.CelestialInfo.SunAzimuth - azimuth), x)
+        )
+        |> List.minBy (fun (diff, _) -> diff)
+        |> fun (_, closestTime) -> addTimeFn (float closestTime)
 
 ```
 
@@ -53,17 +59,21 @@ The following diagram illustrates how content flows through our static site gene
 ```mermaid
 flowchart TD
     A[Content Creation] --> M[Markdown files]
-    M --> B(Fornax Processing)
+    A[Content Creation] --> S[CSS Base File]
+    A[Content Creation] --> P[Components]
+    M --> B(FlightDeck Processing)
+    P --> B(FlightDeck Processing)
+    S --> B(FlightDeck Processing)
     B --> C{File Type}
     C -->|Markdown| D[Generate HTML]
-    C -->|CSS| E[Tailwind Processing]
+    C -->|CSS| E[Tailwind DaisyUI PrismJS]
     C -->|Static Assets| F[Copy to Output]
-    D --> G[Apply Layout]
+    D --> G[Apply Layout & Output]
     E --> G
     F --> H[Final Website]
     G --> H
     
-    subgraph "Build Pipeline"
+    subgraph " "
     B
     C
     D
@@ -72,10 +82,14 @@ flowchart TD
     G
     end
     
-    style M fill:#0AF,stroke:#333,stroke-width:2px,rx:10,ry:10,padding:10px;
-    style A fill:#F9F,stroke:#333,stroke-width:2px,rx:10,ry:10,padding:10px;
-    style H fill:#bbf,stroke:#333,stroke-width:2px,rx:10,ry:10,padding:10px;
+    style C fill:#005,stroke:#F80,stroke-width:2px,rx:10,ry:10,padding:10px,color:#EEE;
+    style P fill:#A9F,stroke:#DDD,stroke-width:2px,rx:10,ry:10,padding:10px;
+    style M fill:#9AF,stroke:#DDD,stroke-width:2px,rx:10,ry:10,padding:10px;
+    style S fill:#458,stroke:#FFF,stroke-width:2px,rx:10,ry:10,padding:10px,color:#EEE;
+    style A fill:#06F,stroke:#FFF,stroke-width:2px,rx:10,ry:10,padding:10px,color:#EEE;
+    style H fill:#065,stroke:#DDD,stroke-width:2px,rx:10,ry:10,padding:10px,color:#EEE;
     style F fill:#F80,stroke:#333,stroke-width:2px,rx:10,ry:10,padding:10px;
+    style G fill:#FA9,stroke:#333,stroke-width:2px,rx:10,ry:10,padding:10px;
 ```
 
 This automated process ensures consistency and allows for easy customization through the configuration files.

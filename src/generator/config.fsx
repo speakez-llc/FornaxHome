@@ -3,45 +3,52 @@
 open Config
 open System.IO
 
+// Helper function to check if path contains node_modules
+let isInNodeModules (path: string) =
+    let normalizedPath = path.Replace('\\', '/').ToLower()
+    normalizedPath.Contains("/node_modules/") || 
+    normalizedPath.Contains("\\node_modules\\") ||
+    normalizedPath.Contains("node_modules")
+
+// Helper function to check if path is in _public folder
+let isInPublicFolder (path: string) =
+    path.Contains "_public" ||
+    path.Contains("/_public/") ||
+    path.Contains("\\_public\\") ||
+    path.StartsWith("_public")
 
 let postPredicate (projectRoot: string, page: string) =
-    let fileName = Path.Combine(projectRoot,page)
-    let ext = Path.GetExtension page
-    if ext = ".md" then
+    // Immediately reject any files in node_modules or _public
+    if isInNodeModules(page) || isInPublicFolder(page) then
+        false
+    elif Path.GetExtension page = ".md" then
+        let fileName = Path.Combine(projectRoot, page)
         let ctn = File.ReadAllText fileName
-        page.Contains("_public") |> not
-        && ctn.Contains("layout: post")
+        ctn.Contains("layout: post")
     else
         false
 
 let pagePredicate (projectRoot: string, page: string) =
-    let fileName = Path.Combine(projectRoot, page)
-    let ext = Path.GetExtension page
-    if ext = ".md" then
+    // Immediately reject any files in node_modules or _public
+    if isInNodeModules(page) || isInPublicFolder(page) then
+        false
+    elif Path.GetExtension page = ".md" then
+        let fileName = Path.Combine(projectRoot, page)
         let ctn = File.ReadAllText fileName
-        page.Contains("_public") |> not
-        && ctn.Contains("layout: page")  // Check for page layout tag
+        ctn.Contains("layout: page")  // Check for page layout tag
     else
         false
 
 let staticPredicate (projectRoot: string, page: string) =
-    let normalizedPage = page.Replace('\\', '/').ToLower()
-    let ext = Path.GetExtension page
-    
-    // First, explicitly exclude all CSS files in node_modules
-    if ext = ".css" || ext = ".html" && normalizedPage.Contains("node_modules") then
+    // Immediately reject any files in node_modules or _public
+    if isInNodeModules(page) || isInPublicFolder(page) then
         false
     else
+        // Then handle other exclusion cases
+        let ext = Path.GetExtension page
         let fileShouldBeExcluded =
             ext = ".fsx" ||
             ext = ".md" ||
-            page.Contains "_public" ||
-            page.Contains("/_public/") ||
-            page.Contains("\\_public\\") ||
-            page.StartsWith("_public") ||
-            page.Contains "node_modules" ||
-            page.Contains("/node_modules/") ||
-            page.Contains("\\node_modules\\") ||
             page.Contains "_bin" ||
             page.Contains "_lib" ||
             page.Contains "_data" ||
@@ -59,13 +66,11 @@ let staticPredicate (projectRoot: string, page: string) =
         fileShouldBeExcluded |> not
 
 let tailwindPredicate (projectRoot: string, page: string) =
-    let ext = Path.GetExtension page
-    let normalizedPage = page.Replace('\\', '/').ToLower()
-    
     // Only process CSS files that are not in node_modules and not in _public
-    ext = ".css" && 
-    not (normalizedPage.Contains("node_modules")) &&
-    not (page.Contains("_public"))
+    if isInNodeModules(page) || isInPublicFolder(page) then
+        false
+    else
+        Path.GetExtension page = ".css"
 
 // Function to output page files at root level
 let pageOutput (page: string) =

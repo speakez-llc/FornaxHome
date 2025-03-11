@@ -110,15 +110,18 @@ html, body {
   width: 100%;
 }
 
-/* Add to your CSS */
 .prose h1:first-child {
   display: none;
 }
 
-/* Hide the first heading in post content to avoid duplication with card title */
 .hide-first-heading > h1:first-child,
 .hide-first-heading > h2:first-child {
   display: none;
+}
+
+.mermaid {
+  display: flex;
+  justify-content: center;
 }
 
 /*
