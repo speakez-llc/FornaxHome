@@ -13,8 +13,8 @@ let loader (projectRoot: string) (siteContent: SiteContents) =
         { title = "SpeakEZ Technologies Home Page";
           description = "Intelligent Systems Designed for Reliability, Privacy, Performance & The Bottom Line";
           postPageSize = 5;
-          lightTheme = "wireframe";
-          darkTheme = "forest" }
+          lightTheme = "autumn";
+          darkTheme = "dracula" }
     siteContent.Add(siteInfo)
 
     siteContent

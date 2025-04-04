@@ -9,4 +9,10 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Falco" Version="5.0.0" />
+    <PackageReference Include="Falco.Datastar" Version="1.0.0-beta2" />
+    <PackageReference Include="Oxpecker" Version="1.2.0" />
+  </ItemGroup>
+
 </Project>

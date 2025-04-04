@@ -54,7 +54,7 @@ html, body {
 
 /* Hero section styling */
 .hero {
-  background-image: url('/images/slider.jpg');
+  background-image: url('/images/post-1.jpg');
   background-position: top;
   background-size: cover;
   background-repeat: no-repeat;

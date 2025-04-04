@@ -44,8 +44,6 @@ type NavItem = {
     icon: string
 }
 
-// CENTRAL DEFINITION OF NAVIGATION
-// This is the single source of truth for standard navigation across all pages
 let getStandardNavigation () =
     [
         { NavItem.title = "Home"; link = "/"; icon = "fa-solid fa-home text-xl"  }
@@ -76,7 +74,7 @@ let createNavBar (active: string) (ctx : SiteContents)  =
         div [Class "container flex justify-between mx-auto items-center w-full"] [
             div [Class "navbar-start item-left"] [
                 a [Class "btn btn-ghost text-xl"; Href "/"] [
-                    img [Src "/images/SpeakEZ_standard.png"; Alt "Logo"; Class "h-8 mr-2"]
+                    img [Src "/images/FlightDeckLogoSmall.png"; Alt "Logo"; Class "h-8 mr-2"]
                 ]
             ]
             div [Class "lg:navbar-center hidden lg:flex"] [
@@ -112,8 +110,6 @@ let createNavBar (active: string) (ctx : SiteContents)  =
         ]
     ]
 
-// Core layout function that all generators should use
-// Core layout function that all generators should use
 let layout (ctx : SiteContents) active bodyCnt =
     let siteInfo = ctx.TryGetValue<Globalloader.SiteInfo> ()
     let ttl, darkTheme, lightTheme =
