@@ -40,13 +40,13 @@ document.addEventListener('DOMContentLoaded', function() {
             // Set clicked button to active state
             if (linkElement.hasAttribute('data-nav-target')) {
                 linkElement.classList.remove('btn-ghost');
-                linkElement.classList.add('btn-secondary');
+                linkElement.classList.add('btn-primary');  // Changed from btn-secondary to btn-primary
             } else if (href.includes('/posts/')) {
                 // When clicking on individual posts, keep Posts nav button active
                 const postsNavButton = document.querySelector('.btn[data-nav-target="Posts"]');
                 if (postsNavButton) {
                     postsNavButton.classList.remove('btn-ghost');
-                    postsNavButton.classList.add('btn-secondary');
+                    postsNavButton.classList.add('btn-primary');  // Changed from btn-secondary to btn-primary
                 }
             }
             

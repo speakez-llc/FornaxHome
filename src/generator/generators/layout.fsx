@@ -73,7 +73,7 @@ let createNavBar (active: string) (ctx : SiteContents)  =
             li [] [
                 a [
                     // Use btn-ghost for inactive, and btn-primary for active
-                    Class (sprintf "btn %s" (if isActive then "btn-secondary" else "btn-ghost"))
+                    Class (sprintf "btn %s" (if isActive then "btn-primary" else "btn-ghost"))
                     Href p.link
                     HtmlProperties.Custom("data-nav-target", p.title)
                 ] [
