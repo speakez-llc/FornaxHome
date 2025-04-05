@@ -17,17 +17,43 @@ let generate' (ctx : SiteContents) (page: string) =
             |> Option.defaultValue ""
 
         Layout.layout ctx post.title [
-            section [Class "hero bg-primary text-primary-content py-24"] [
+            // Hero section should match posts.fsx structure exactly
+            section [Id "static-hero-container"; Class "hero bg-primary text-primary-content py-24"] [
                 div [Class "hero-content text-center"] [
                     div [Class "max-w-md"] [
                         h1 [Class "text-4xl font-bold text-white"] [!!desc]
                     ]
                 ]
             ]
-            div [Class "container mx-auto px-4"] [
+            // Content area should match posts.fsx structure exactly 
+            div [Id "content-area"; Class "container mx-auto px-4"] [
+                // Posts page has a section inside content-area with a class of py-8
                 section [Class "py-8"] [
                     div [Class "max-w-3xl mx-auto"] [
+                        // Back button at the top
+                        div [Class "flex items-center mb-6"] [
+                            a [
+                                Class "btn btn-outline btn-sm gap-2"; 
+                                Href "/posts/index.html"
+                            ] [
+                                i [Class "fa-solid fa-arrow-left text-sm"] []
+                                !! "Back to Posts"
+                            ]
+                        ]
+                        
+                        // Post content
                         Layout.postLayout false post
+                        
+                        // Back button at the bottom
+                        div [Class "flex justify-center mt-8"] [
+                            a [
+                                Class "btn btn-outline gap-2"; 
+                                Href "/posts/index.html"
+                            ] [
+                                i [Class "fa-solid fa-arrow-left"] []
+                                !! "Back to Posts"
+                            ]
+                        ]
                     ]
                 ]
             ]
@@ -35,19 +61,28 @@ let generate' (ctx : SiteContents) (page: string) =
     | None ->
         printfn "Warning: Post '%s' not found" page
         Layout.layout ctx "Post Not Found" [
-            div [Class "container mx-auto px-4 py-8"] [
-                div [Class "card bg-warning text-warning-content max-w-md mx-auto"] [
-                    div [Class "card-body"] [
-                        h2 [Class "card-title"] [!!"Post Not Found"]
-                        p [] [!!(sprintf "The post '%s' could not be found." page)]
-                        a [Class "btn"; Href "/"] [!!"Return Home"]
+            section [Id "static-hero-container"; Class "hero bg-warning text-warning-content py-24"] [
+                div [Class "hero-content text-center"] [
+                    div [Class "max-w-md"] [
+                        h1 [Class "text-4xl font-bold"] [!!"Page Not Found"]
+                    ]
+                ]
+            ]
+            div [Id "content-area"; Class "container mx-auto px-4"] [
+                section [Class "py-8"] [
+                    div [Class "max-w-3xl mx-auto"] [
+                        div [Class "card bg-warning text-warning-content max-w-md mx-auto"] [
+                            div [Class "card-body"] [
+                                h2 [Class "card-title"] [!!"Post Not Found"]
+                                p [] [!!(sprintf "The post '%s' could not be found." page)]
+                                a [Class "btn"; Href "/"] [!!"Return Home"]
+                            ]
+                        ]
                     ]
                 ]
             ]
         ]
 
 let generate (ctx : SiteContents) (projectRoot: string) (page: string) =
-    // The fix: Call Layout.render with the generated content
     let content = generate' ctx page
     Layout.render ctx content
-    

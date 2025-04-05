@@ -62,9 +62,13 @@ let createNavBar (active: string) (ctx : SiteContents)  =
     let menuEntries =
         getStandardNavigation()
         |> List.map (fun p ->
-            let cls = if p.title = active then "active" else ""
+            let cls = if p.title = active then "active nav-link" else "nav-link"
             li [] [
-                a [Class cls; Href p.link] [
+                a [
+                    Class cls
+                    Href p.link
+                    HtmlProperties.Custom("data-nav-target", p.title) // Use HtmlProperties.Custom instead of just Custom
+                ] [
                     i [Class (p.icon + " mr-2")] [] 
                     !! p.title
                 ]
@@ -117,8 +121,21 @@ let layout (ctx : SiteContents) active bodyCnt =
       |> Option.map (fun si -> si.title, si.darkTheme, si.lightTheme)
       |> Option.defaultValue ("", "dark", "light")
 
-    // Pass the ctx argument to createNavBar
     let navBar = createNavBar active ctx
+
+    let isHeroSection (element: HtmlElement) =
+        try
+            let elementStr = element.ToString().ToLower()
+            elementStr.Contains("class=\"hero") || 
+            elementStr.Contains("id=\"hero")
+        with _ -> 
+            false
+    
+    // Split content into hero and main sections
+    let heroContent, mainContent =
+        match bodyCnt with
+        | h :: rest when isHeroSection h -> Some h, rest
+        | _ -> None, bodyCnt
 
     html [HtmlProperties.Custom ("data-theme", darkTheme)] [ // Use corporate as the default theme
         head [] [
@@ -136,9 +153,11 @@ let layout (ctx : SiteContents) active bodyCnt =
             script [Src "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-powershell.min.js"] []
             script [Src "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-bash.min.js"] []            
             script [Src "https://cdnjs.cloudflare.com/ajax/libs/mermaid/9.1.3/mermaid.min.js"] []
+            script [Src "https://cdn.jsdelivr.net/npm/morphdom@2.7.0/dist/morphdom-umd.min.js"] []
             script [] [!! "document.addEventListener('DOMContentLoaded', function() { Prism.highlightAll(); });"]
             link [Rel "stylesheet"; Type "text/css"; Href "/style/style.css"]
             script [Src "https://kit.fontawesome.com/3e50397676.js"; CrossOrigin "anonymous"] []
+            script [Src "/js/spa.js"; Defer true] []
             script [] [!! (sprintf """
                 // Theme initialization script with themes from siteInfo
                 (function() {
@@ -184,10 +203,33 @@ let layout (ctx : SiteContents) active bodyCnt =
                     });
                 })();
             """ darkTheme lightTheme)]
+            // Add to your <head> section in layout.fsx
+            style [] [!! """
+                /* Page transition effects */
+                .page-transitioning {
+                    pointer-events: none;
+                }
+                
+                #content-area, main {
+                    transition: opacity 300ms ease;
+                }
+                
+                .page-transitioning #content-area,
+                .page-transitioning main {
+                    opacity: 0.6;
+                }
+            """]
         ]
         body [] [
-            navBar
-            yield! bodyCnt
+            navBar 
+            div [Id "static-hero-container"] [
+                match heroContent with
+                | Some hero -> yield hero
+                | None -> ()
+            ]
+            main [Id "content-area"; Class "transition-container"] [
+                yield! mainContent
+            ]
         ]
     ]
 
