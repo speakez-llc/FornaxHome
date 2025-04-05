@@ -7,28 +7,35 @@
 
 open Html
 
+// In layout.fsx
 let injectWebsocketCode (webpage:string) =
     let websocketScript =
         """
         <script type="text/javascript">
           var wsUri = "ws://localhost:8080/websocket";
-      function init()
-      {
-        websocket = new WebSocket(wsUri);
-        websocket.onclose = function(evt) { onClose(evt) };
-      }
-      function onClose(evt)
-      {
-        console.log('closing');
-        websocket.close();
-        document.location.reload();
-      }
-      window.addEventListener("load", init, false);
-      </script>
+          var spaEnabled = true; // Toggle this to disable auto-refresh during SPA testing
+          
+          function init() {
+            if (!spaEnabled) {
+              websocket = new WebSocket(wsUri);
+              websocket.onclose = function(evt) { onClose(evt) };
+            }
+          }
+          
+          function onClose(evt) {
+            console.log('closing');
+            websocket.close();
+            if (!spaEnabled) {
+              document.location.reload();
+            }
+          }
+          
+          window.addEventListener("load", init, false);
+        </script>
         """
     let head = "<head>"
     let index = webpage.IndexOf head
-    webpage.Insert ( (index + head.Length + 1),websocketScript)
+    webpage.Insert ( (index + head.Length + 1), websocketScript)
 
 type Page = {
     title: string
@@ -62,19 +69,20 @@ let createNavBar (active: string) (ctx : SiteContents)  =
     let menuEntries =
         getStandardNavigation()
         |> List.map (fun p ->
-            let cls = if p.title = active then "active nav-link" else "nav-link"
+            let isActive = p.title = active
             li [] [
                 a [
-                    Class cls
+                    // Use btn-ghost for inactive, and btn-primary for active
+                    Class (sprintf "btn %s" (if isActive then "btn-secondary" else "btn-ghost"))
                     Href p.link
-                    HtmlProperties.Custom("data-nav-target", p.title) // Use HtmlProperties.Custom instead of just Custom
+                    HtmlProperties.Custom("data-nav-target", p.title)
                 ] [
                     i [Class (p.icon + " mr-2")] [] 
                     !! p.title
                 ]
             ])
 
-    nav [Class "navbar sticky top-0 z-10 bg-base-100"] [ 
+    nav [Id "navbar"; Class "navbar sticky top-0 z-10 bg-base-100"] [ 
         div [Class "container flex justify-between mx-auto items-center w-full"] [
             div [Class "navbar-start item-left"] [
                 a [Class "btn btn-ghost text-xl"; Href "/"] [
@@ -203,22 +211,6 @@ let layout (ctx : SiteContents) active bodyCnt =
                     });
                 })();
             """ darkTheme lightTheme)]
-            // Add to your <head> section in layout.fsx
-            style [] [!! """
-                /* Page transition effects */
-                .page-transitioning {
-                    pointer-events: none;
-                }
-                
-                #content-area, main {
-                    transition: opacity 300ms ease;
-                }
-                
-                .page-transitioning #content-area,
-                .page-transitioning main {
-                    opacity: 0.6;
-                }
-            """]
         ]
         body [] [
             navBar 

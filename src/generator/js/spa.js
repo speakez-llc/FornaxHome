@@ -1,155 +1,122 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Track the current URL to prevent unnecessary reloads
+    // Track the current URL
     let currentPath = window.location.pathname;
+    let isTransitioning = false;
     
-    // Select all navigation links with data-nav-target
-    document.querySelectorAll('a[data-nav-target], a[href^="/"]:not([href^="//"])').forEach(link => {
-        link.addEventListener('click', function(e) {
-            const href = this.getAttribute('href');
+    // Transition duration in milliseconds - used for ALL timings
+    const TRANSITION_DURATION = 300;
+    
+    // Listen for clicks on internal links
+    document.body.addEventListener('click', function(e) {
+        // Find if a link was clicked
+        let linkElement = e.target.closest('a');
+        
+        if (!linkElement) return; // Not a link click
+        
+        const href = linkElement.getAttribute('href');
+        
+        // Skip: external links, anchor links, same page, or during transition
+        if (!href || 
+            href.startsWith('http') || 
+            href.startsWith('#') || 
+            href === currentPath || 
+            isTransitioning) {
+            return;
+        }
+        
+        // Only handle internal navigation
+        if (href.startsWith('/')) {
+            e.preventDefault();
+            isTransitioning = true;
             
-            // Skip external links, anchor links, or same page links
-            if (href.startsWith('http') || href.startsWith('#') || href === currentPath) {
+            // Update navigation button states immediately
+            const navLinks = document.querySelectorAll('.btn[data-nav-target]');
+            navLinks.forEach(link => {
+                // Reset all buttons to ghost state
+                link.classList.remove('btn-primary', 'btn-secondary');
+                link.classList.add('btn-ghost');
+            });
+            
+            // Set clicked button to active state
+            if (linkElement.hasAttribute('data-nav-target')) {
+                linkElement.classList.remove('btn-ghost');
+                linkElement.classList.add('btn-secondary');
+            } else if (href.includes('/posts/')) {
+                // When clicking on individual posts, keep Posts nav button active
+                const postsNavButton = document.querySelector('.btn[data-nav-target="Posts"]');
+                if (postsNavButton) {
+                    postsNavButton.classList.remove('btn-ghost');
+                    postsNavButton.classList.add('btn-secondary');
+                }
+            }
+            
+            // Find the content area - DO NOT touch the hero
+            const contentArea = document.getElementById('content-area');
+            
+            if (!contentArea) {
+                console.error('Content area not found');
+                window.location.href = href;
                 return;
             }
             
-            e.preventDefault();
+            // 1. Fade out content area ONLY
+            contentArea.style.transition = `opacity ${TRANSITION_DURATION}ms ease`;
+            contentArea.style.opacity = '0';
             
-            // Check if this is a post link or back button
-            const isPostPage = currentPath.includes('/posts/') || href.includes('/posts/');
-            const isPostBackButton = this.innerText && this.innerText.includes('Back to Posts');
-            
-            console.log(`⚡ Navigating to: ${href} (Post page: ${isPostPage}, Back button: ${isPostBackButton})`);
-            
-            // Fetch the new page content
-            fetch(href)
-                .then(response => response.text())
-                .then(html => {
-                    // Create a temporary element to parse the HTML
-                    const parser = new DOMParser();
-                    const newDoc = parser.parseFromString(html, 'text/html');
-                    
-                    // Define SPECIFIC sections that might change - we'll check each one individually
-                    const sections = [
-                        { id: 'static-hero-container', shouldMorph: true },
-                        { id: 'content-area', shouldMorph: true },
-                        { id: 'navbar', shouldMorph: false } // Don't transition navbar
-                    ];
-                    
-                    // Track sections that need morphing
-                    const sectionsToMorph = [];
-                    
-                    // Phase 1: Identify sections that actually changed, and ONLY fade those out
-                    sections.forEach(section => {
-                        const currentSection = document.getElementById(section.id);
-                        const newSection = newDoc.getElementById(section.id);
+            // 2. After fade out completes, fetch and update
+            setTimeout(() => {
+                fetch(href)
+                    .then(response => response.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const newDoc = parser.parseFromString(html, 'text/html');
                         
-                        if (!currentSection || !newSection || !section.shouldMorph) return;
+                        // Get new content
+                        const newContent = newDoc.getElementById('content-area');
                         
-                        // For post-related navigation, ALWAYS use clean replacement for content-area
-                        if ((isPostPage || isPostBackButton) && section.id === 'content-area') {
-                            console.log(`✅ Using CLEAN replacement for ${section.id} - post-related page`);
-                            
-                            // Start transition ONLY for this section
-                            currentSection.style.transition = 'opacity 300ms ease-in-out';
-                            currentSection.style.opacity = '0.2';
-                            
-                            sectionsToMorph.push({
-                                currentSection,
-                                newSection,
-                                forceReplaceContent: true // Special flag for post navigation
-                            });
+                        if (!newContent) {
+                            console.error('New content area not found');
+                            window.location.href = href;
                             return;
                         }
                         
-                        // Normal comparison for other cases
-                        const currentContent = currentSection.innerHTML.replace(/\s+/g, ' ').trim();
-                        const newContent = newSection.innerHTML.replace(/\s+/g, ' ').trim();
+                        // 3. Replace content with new page content
+                        contentArea.innerHTML = newContent.innerHTML;
                         
-                        if (currentContent !== newContent) {
-                            console.log(`✅ Section ${section.id} content changed - will transition`);
-                            
-                            // ONLY apply transition to THIS specific section
-                            currentSection.style.transition = 'opacity 300ms ease-in-out';
-                            currentSection.style.opacity = '0.2'; // Dim out just this section
-                            
-                            // Store for phase 2
-                            sectionsToMorph.push({
-                                currentSection,
-                                newSection
-                            });
-                        } else {
-                            console.log(`⏺️ Section ${section.id} remains STATIC - NO TRANSITION`);
-                        }
-                    });
-                    
-                    // If no content changes, just update the URL
-                    if (sectionsToMorph.length === 0) {
-                        console.log("📌 No content changes detected, just updating URL");
-                        window.history.pushState({}, newDoc.title, href);
-                        currentPath = href;
-                        return;
-                    }
-                    
-                    // Phase 2: After fade-out completes, update ONLY the changed DOM sections
-                    setTimeout(() => {
-                        // Update only the sections that needed changing
-                        sectionsToMorph.forEach(({ currentSection, newSection, forceReplaceContent }) => {
-                            console.log(`🔄 Morphing section ${currentSection.id}`);
-                            
-                            // For post pages or complex changes, use direct replacement
-                            if (forceReplaceContent || isPostPage) {
-                                console.log(`🔄 Using DIRECT replacement for ${currentSection.id}`);
-                                // Completely replace the content - clean slate
-                                currentSection.innerHTML = newSection.innerHTML;
-                            } else {
-                                // Use morphdom for normal cases - with careful options
-                                morphdom(currentSection, newSection, {
-                                    onBeforeElUpdated: function(fromEl, toEl) {
-                                        // Skip if elements are identical
-                                        if (fromEl.isEqualNode(toEl)) {
-                                            return false;
-                                        }
-                                        return true;
-                                    }
-                                });
-                            }
-                            
-                            // Force a reflow to ensure transition will work
-                            void currentSection.offsetWidth;
-                            
-                            // Start fade-in ONLY for this specific section
-                            currentSection.style.transition = 'opacity 300ms ease-in-out';
-                            currentSection.style.opacity = '1';
-                        });
-                        
-                        // Update page title and history
+                        // 4. Update page data
                         document.title = newDoc.title;
                         window.history.pushState({}, newDoc.title, href);
                         currentPath = href;
                         
-                        // Re-initialize any scripts that need to run on the new page
+                        // 5. Initialize any scripts in new content
                         if (window.Prism) Prism.highlightAll();
-                        if (window.mermaid) {
-                            setTimeout(() => mermaid.init(undefined, document.querySelectorAll('.mermaid')), 100);
+                        if (window.mermaid && typeof mermaid !== 'undefined') {
+                            mermaid.init(undefined, document.querySelectorAll('.mermaid'));
                         }
                         
-                        // Clean up transition styles after fade-in completes
+                        // 6. Force reflow before starting transition
+                        void contentArea.offsetWidth;
+                        
+                        // 7. Fade in content
+                        contentArea.style.transition = `opacity ${TRANSITION_DURATION}ms ease`;
+                        contentArea.style.opacity = '1';
+                        
+                        // 8. Reset transition after fade-in completes
                         setTimeout(() => {
-                            sectionsToMorph.forEach(({ currentSection }) => {
-                                // Only clear transitions, leave opacity at 1
-                                currentSection.style.transition = '';
-                            });
-                        }, 350);
-                    }, 350);
-                })
-                .catch(error => {
-                    console.error('❌ Error loading page:', error);
-                    window.location.href = href; // Fallback to normal navigation
-                });
-        });
+                            contentArea.style.transition = '';
+                            isTransitioning = false;
+                        }, TRANSITION_DURATION);
+                    })
+                    .catch(error => {
+                        console.error('Error loading page:', error);
+                        window.location.href = href;
+                        isTransitioning = false;
+                    });
+            }, TRANSITION_DURATION);
+        }
     });
     
-    // Handle browser back/forward navigation
+    // Handle browser back/forward
     window.addEventListener('popstate', function() {
         if (window.location.pathname !== currentPath) {
             window.location.reload();
