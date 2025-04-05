@@ -62,7 +62,7 @@ let getStandardNavigation () =
 // Creates a consistent navigation bar for all pages
 let createNavBar (active: string) (ctx : SiteContents)  =
     let siteInfo = ctx.TryGetValue<Globalloader.SiteInfo> ()
-    let ttl, darkTheme, lightTheme =
+    let ttl, darkTheme, (lightTheme: string) =
       siteInfo
       |> Option.map (fun si -> si.title, si.darkTheme, si.lightTheme)
       |> Option.defaultValue ("", "dark", "light")
@@ -90,7 +90,7 @@ let createNavBar (active: string) (ctx : SiteContents)  =
                 ]
             ]
             div [Class "lg:navbar-center hidden lg:flex"] [
-                ul [Class "menu menu-horizontal"] menuEntries
+                ul [Class "menu menu-horizontal gap-4"] menuEntries
             ]
             div [Class "navbar-end hidden lg:flex"] [
                 label [Class "swap swap-rotate mr-4"] [
@@ -214,13 +214,18 @@ let layout (ctx : SiteContents) active bodyCnt =
         ]
         body [] [
             navBar 
-            div [Id "static-hero-container"] [
-                match heroContent with
-                | Some hero -> yield hero
-                | None -> ()
-            ]
-            main [Id "content-area"; Class "transition-container"] [
-                yield! mainContent
+            // Wrap hero + main in a relative container so main can overlap hero
+            div [Class "relative"] [
+                // Keep hero separate
+                div [Id "static-hero-container"; Class "z-10"] [
+                    match heroContent with
+                    | Some hero -> yield hero
+                    | None -> ()
+                ]
+                // Pull main content up to overlap
+                main [Id "content-area"; Class "transition-container mt-[-4rem] z-0"] [
+                    yield! mainContent
+                ]
             ]
         ]
     ]

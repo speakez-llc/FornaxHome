@@ -82,7 +82,7 @@ let generate' (ctx : SiteContents) (page: string) =
         
         // Use Layout.layout which includes the navigation bar
         Layout.layout ctx pageData.title [
-            section [Class "hero bg-primary text-primary-content py-24"] [
+            section [Id "static-hero-container"; Class "hero bg-primary text-primary-content py-24"] [
                 div [Class "hero-content text-center"] [
                     div [Class "max-w-md"] [
                         let siteInfo = ctx.TryGetValue<Globalloader.SiteInfo> ()
