@@ -83,37 +83,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Morph only body’s children; skip hero if unchanged
     function morphPage(oldBody, newBody, newDoc, href) {
-        // Force full content-area replacement regardless of similarity
+        // Get the elements
         const contentArea = oldBody.querySelector('#content-area');
         const newContentArea = newBody.querySelector('#content-area');
         
+        // Always completely replace the content area
         if (contentArea && newContentArea) {
-            // Replace content-area completely before morphing the rest
             contentArea.innerHTML = newContentArea.innerHTML;
         }
         
-        morphdom(oldBody, newBody, {
-            childrenOnly: true,
-            onBeforeElUpdated(fromEl, toEl) {
-                // Skip content-area since we already replaced its contents
-                if (fromEl.id === 'content-area') {
-                    return false;
-                }
-                
-                // Skip hero if unchanged
-                if (fromEl.id === 'static-hero-container') {
-                    if (sameContentIgnoringWhitespace(fromEl, toEl)) {
-                        return false;
-                    }
-                }
-                return true;
-            },
-        });
-        
+        // Update document properties
         document.title = newDoc.title;
         window.history.pushState({}, newDoc.title, href);
         currentPath = href;
-
+    
         // Re-init scripts
         if (window.Prism) Prism.highlightAll();
         if (window.mermaid && typeof mermaid !== 'undefined') {

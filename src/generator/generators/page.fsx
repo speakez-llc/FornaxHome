@@ -82,28 +82,10 @@ let generate' (ctx : SiteContents) (page: string) =
         
         // Use Layout.layout which includes the navigation bar
         Layout.layout ctx pageData.title [
-            section [Id "static-hero-container"; Class "hero bg-primary text-primary-content py-24"] [
-                div [Class "hero-content text-center"] [
-                    div [Class "max-w-md"] [
-                        let siteInfo = ctx.TryGetValue<Globalloader.SiteInfo> ()
-                        let desc =
-                            siteInfo
-                            |> Option.map (fun si -> si.description)
-                            |> Option.defaultValue ""
-                        h1 [Class "text-4xl font-bold text-white"] [!!desc]
-                    ]
-                ]
-            ]
-            div [Class "container mx-auto px-4"] [
-                section [Class "py-8"] [
-                    div [Class "max-w-3xl mx-auto"] [
-                        div [Class "card bg-base-100 shadow-xl"] [
-                            div [Class "card-body"] [
-                                div [Class "prose prose-lg prose-headings:font-bold prose-h1:text-2xl prose-h2:text-xl prose-a:text-blue-600 prose-ul:list-disc prose-ul:ml-4 !max-w-none"] [
-                                    !!processedContent
-                                ]
-                            ]
-                        ]
+            div [Class "card bg-base-100 shadow-xl"] [
+                div [Class "card-body"] [
+                    div [Class "prose prose-lg prose-headings:font-bold prose-h1:text-2xl prose-h2:text-xl prose-a:text-blue-600 prose-ul:list-disc prose-ul:ml-4 !max-w-none"] [
+                        !!processedContent
                     ]
                 ]
             ]

@@ -27,33 +27,24 @@ let generate' (ctx : SiteContents) (_: string) =
       sprintf "posts/page%i.html" i
 
   let layoutForPostSet i postList =
-      let nextPage =
-          if i = (pages - 1) then "#"
-          else "/" + getFilenameForIndex (i + 1)
-  
-      let previousPage =
-          if i = 0 then "#"
-          else "/" + getFilenameForIndex (i - 1)
+    let nextPage =
+        if i = (pages - 1) then "#"
+        else "/" + getFilenameForIndex (i + 1)
 
-      Layout.layout ctx "Posts" [
-          section [Id "static-hero-container"; Class "hero bg-primary text-primary-content py-24"] [
-              div [Class "hero-content text-center"] [
-                  div [Class "max-w-md"] [
-                      h1 [Class "text-4xl font-bold text-white"] [!!desc]
-                  ]
-              ]
-          ]
-          div [Id "content-area"; Class "container mx-auto px-4"] [
-            section [Class "py-8"] [
-                div [Class "max-w-3xl mx-auto"] postList
-            ]
+    let previousPage =
+        if i = 0 then "#"
+        else "/" + getFilenameForIndex (i - 1)
+
+    // SIMPLIFIED: Just provide the post list and pagination
+    Layout.layout ctx "Posts" (
+        postList @ [
             div [Class "flex justify-center items-center gap-4 p-4 rounded-lg"] [
-                a [Class "btn btn-outline transition-opacity duration-500 ease-in-out"; Href previousPage] [!! "Previous"]
+                a [Class "btn btn-outline"; Href previousPage] [!! "Previous"]
                 span [Class "text-sm"] [!! (sprintf "Page %i of %i" (i + 1) pages)]
-                a [Class "btn btn-outline transition-opacity duration-500 ease-in-out"; Href nextPage] [!! "Next"]
+                a [Class "btn btn-outline"; Href nextPage] [!! "Next"]
             ]
         ]
-      ]
+    )
 
   postList
   |> List.mapi (fun i psts ->

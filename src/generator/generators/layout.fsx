@@ -122,28 +122,29 @@ let createNavBar (active: string) (ctx : SiteContents)  =
         ]
     ]
 
-let layout (ctx : SiteContents) active bodyCnt =
+let layout (ctx: SiteContents) active (pageContent: HtmlElement list) =
     let siteInfo = ctx.TryGetValue<Globalloader.SiteInfo> ()
     let ttl, darkTheme, lightTheme =
       siteInfo
       |> Option.map (fun si -> si.title, si.darkTheme, si.lightTheme)
       |> Option.defaultValue ("", "dark", "light")
+    
+    let desc =
+      siteInfo
+      |> Option.map (fun si -> si.description)
+      |> Option.defaultValue ""
 
     let navBar = createNavBar active ctx
-
-    let isHeroSection (element: HtmlElement) =
-        try
-            let elementStr = element.ToString().ToLower()
-            elementStr.Contains("class=\"hero") || 
-            elementStr.Contains("id=\"hero")
-        with _ -> 
-            false
     
-    // Split content into hero and main sections
-    let heroContent, mainContent =
-        match bodyCnt with
-        | h :: rest when isHeroSection h -> Some h, rest
-        | _ -> None, bodyCnt
+    // Create a consistent hero section for all pages
+    let defaultHero = 
+        section [Class "hero bg-primary text-primary-content py-24"] [
+            div [Class "hero-content text-center"] [
+                div [Class "max-w-md"] [
+                    h1 [Class "text-4xl font-bold text-white"] [!!desc]
+                ]
+            ]
+        ]
 
     html [HtmlProperties.Custom ("data-theme", darkTheme)] [ // Use corporate as the default theme
         head [] [
@@ -216,15 +217,18 @@ let layout (ctx : SiteContents) active bodyCnt =
             navBar 
             // Wrap hero + main in a relative container so main can overlap hero
             div [Class "relative"] [
-                // Keep hero separate
+                // Keep hero separate - layout FULLY controls this
                 div [Id "static-hero-container"; Class "z-10"] [
-                    match heroContent with
-                    | Some hero -> yield hero
-                    | None -> ()
+                    // Always use the consistent hero
+                    defaultHero
                 ]
                 // Pull main content up to overlap
-                main [Id "content-area"; Class "transition-container mt-[-4rem] z-0"] [
-                    yield! mainContent
+                main [Id "content-area"; Class "transition-container z-0"] [
+                    div [Class "container mx-auto px-4"] [
+                        section [Class "py-8"] [
+                            div [Class "max-w-3xl mx-auto"] pageContent
+                        ]
+                    ]
                 ]
             ]
         ]
