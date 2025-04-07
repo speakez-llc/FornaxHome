@@ -1,5 +1,3 @@
-// javascript
-// filepath: d:\repos\FornaxHome\src\generator\js\spa.js
 document.addEventListener('DOMContentLoaded', () => {
     const TRANSITION_DURATION = 250; // Updated to match Tailwind's 250ms
     let currentPath = window.location.pathname;
